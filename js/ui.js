@@ -1,5 +1,5 @@
 /**
- * NSE Fee Calculator — UI Module
+ * NSE Fee Calculator — UI Module (Neo-Fintech Design)
  *
  * Handles all DOM manipulation, event listeners, and rendering.
  * Uses calculator.js for all calculations (pure functions).
@@ -9,16 +9,14 @@
 
 import * as calc from './calculator.js';
 import * as data from './data.js';
-import { generateShareCard, shareResult } from './share.js';
+import { shareResult } from './share.js';
 
 // ============================================
-// Utility Functions for Safe DOM Creation
+// Utility Functions
 // ============================================
 
 /**
  * Create a table cell with text content
- * @param {string} text - Cell content
- * @returns {HTMLTableCellElement} Table cell element
  */
 function createCell(text) {
     const cell = document.createElement('td');
@@ -28,10 +26,6 @@ function createCell(text) {
 
 /**
  * Create an element with class and text content
- * @param {string} tag - HTML tag name
- * @param {string} className - CSS class name
- * @param {string} text - Text content
- * @returns {HTMLElement} Created element
  */
 function createElement(tag, className, text) {
     const el = document.createElement(tag);
@@ -40,14 +34,35 @@ function createElement(tag, className, text) {
     return el;
 }
 
+/**
+ * Animate number counting
+ */
+function animateNumber(element, endValue, duration = 600, prefix = '', suffix = '') {
+    const startTime = performance.now();
+    const startValue = parseFloat(element.textContent.replace(/[^\d.-]/g, '')) || 0;
+
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Easing function
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+
+        const currentValue = startValue + (endValue - startValue) * easeOut;
+        element.textContent = prefix + currentValue.toFixed(2) + suffix;
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+
 // ============================================
 // State
 // ============================================
 
-/**
- * Current calculator state
- * @type {CalculatorState}
- */
 const state = {
     direction: 'buy',
     ticker: null,
@@ -62,10 +77,10 @@ const state = {
 // DOM Elements
 // ============================================
 
-// Input elements
 const els = {
-    // Direction buttons
-    directionBtns: document.querySelectorAll('.direction-btn'),
+    // Direction
+    directionSwitch: document.querySelector('.direction-switch'),
+    directionBtns: document.querySelectorAll('.dir-btn'),
 
     // Form inputs
     stockSelect: document.getElementById('stockSelect'),
@@ -88,16 +103,15 @@ const els = {
     resultsCard: document.getElementById('resultsCard'),
     resultsLabel: document.getElementById('resultsLabel'),
     resultsAmount: document.getElementById('resultsAmount'),
-    feeThermometerBar: document.getElementById('feeThermometerBar'),
+    feeBarFill: document.getElementById('feeBarFill'),
     feePercentValue: document.getElementById('feePercentValue'),
     feeEmoji: document.getElementById('feeEmoji'),
+    feeBadge: document.getElementById('feeBadge'),
     feeAmount: document.getElementById('feeAmount'),
-    stampDutyWarning: document.getElementById('stampDutyWarning'),
+    stampDutyAlert: document.getElementById('stampDutyAlert'),
     stampDutyAmount: document.getElementById('stampDutyAmount'),
     stampDutyPercent: document.getElementById('stampDutyPercent'),
     resultsSummary: document.getElementById('resultsSummary'),
-    minFeeWarning: document.getElementById('minFeeWarning'),
-    minFeeWarningText: document.getElementById('minFeeWarningText'),
 
     // Breakdown
     bdSharesValue: document.getElementById('bdSharesValue'),
@@ -125,22 +139,23 @@ const els = {
 
     // States
     loadingState: document.getElementById('loadingState'),
-    emptyState: document.getElementById('emptyState'),
 
     // Share
     shareBtn: document.getElementById('shareBtn'),
-    priceUpdateDate: document.getElementById('priceUpdateDate')
+    priceUpdateDate: document.getElementById('priceUpdateDate'),
+    brokerCountValue: document.getElementById('brokerCountValue'),
+    
+    // Stats
+    statBrokerCount: document.getElementById('statBrokerCount'),
+    statStockCount: document.getElementById('statStockCount')
 };
 
 // ============================================
 // Initialization
 // ============================================
 
-/**
- * Initialize the calculator
- */
 async function init() {
-    // Fetch fresh prices from data/stocks.json (overlays embedded fallback prices)
+    // Fetch fresh prices from data/stocks.json
     await data.loadPrices();
 
     populateStocks();
@@ -148,13 +163,33 @@ async function init() {
     loadURLParams();
     attachEventListeners();
     updatePriceDateBadge();
+    updateBrokerCount();
 
-    // Hide loading, show empty
+    // Hide loading
     els.loadingState.hidden = true;
-    els.emptyState.hidden = false;
 
     // Register service worker
     registerServiceWorker();
+}
+
+/**
+ * Update hero broker count
+ */
+function updateBrokerCount() {
+    const brokerCount = data.getAllBrokers().filter(broker => broker.id !== 'custom').length;
+    const stockCount = data.getAllStocks().length;
+    
+    if (els.brokerCountValue) {
+        els.brokerCountValue.textContent = `${brokerCount} compared`;
+    }
+    
+    if (els.statBrokerCount) {
+        els.statBrokerCount.textContent = `${brokerCount}+`;
+    }
+    
+    if (els.statStockCount) {
+        els.statStockCount.textContent = `${stockCount}+`;
+    }
 }
 
 /**
@@ -162,12 +197,8 @@ async function init() {
  */
 function populateStocks() {
     const stocks = data.getAllStocks();
-
-    // Add popular stocks section
     const popularGroup = document.createElement('optgroup');
     popularGroup.label = 'Popular Stocks';
-
-    // Add all stocks section
     const allGroup = document.createElement('optgroup');
     allGroup.label = 'All Stocks';
 
@@ -205,7 +236,6 @@ function populateBrokers() {
         els.brokerSelect.appendChild(option);
     });
 
-    // Set default
     els.brokerSelect.value = data.DEFAULT_BROKER_ID;
     updateBrokerHint();
 }
@@ -282,7 +312,6 @@ function attachEventListeners() {
         state.brokerId = els.brokerSelect.value;
         updateBrokerHint();
 
-        // Show/hide custom broker inputs
         if (state.brokerId === 'custom') {
             els.customBrokerGroup.hidden = false;
         } else {
@@ -340,13 +369,8 @@ function attachEventListeners() {
     els.shareBtn?.addEventListener('click', handleShare);
 }
 
-// ============================================
-// Direction Handling
-// ============================================
-
 /**
  * Set trade direction
- * @param {string} direction - 'buy' or 'sell'
  */
 function setDirection(direction) {
     state.direction = direction;
@@ -360,17 +384,17 @@ function setDirection(direction) {
             btn.setAttribute('aria-pressed', 'false');
         }
     });
+
+    // Update slider
+    if (direction === 'sell') {
+        els.directionSwitch?.setAttribute('data-sell', 'true');
+    } else {
+        els.directionSwitch?.removeAttribute('data-sell');
+    }
 }
 
-// ============================================
-// Helper Functions
-// ============================================
-
 /**
- * Debounce function for input handlers
- * @param {Function} fn - Function to debounce
- * @param {number} delay - Delay in ms
- * @returns {Function} Debounced function
+ * Debounce function
  */
 function debounce(fn, delay) {
     let timeoutId;
@@ -402,11 +426,11 @@ function updatePriceDateBadge() {
         const formatted = date.toLocaleDateString('en-KE', { day: 'numeric', month: 'short' });
         els.priceDateBadge.textContent = `as of ${formatted}`;
 
-        // Check if price is stale (> 7 days)
         const daysOld = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
         if (daysOld > 7) {
-            els.priceDateBadge.style.color = 'var(--color-fee-high)';
-            els.priceDateBadge.textContent += ' ⚠️';
+            els.priceDateBadge.style.color = 'var(--warning)';
+        } else {
+            els.priceDateBadge.style.color = '';
         }
     }
 
@@ -423,7 +447,7 @@ function updatePriceDateBadge() {
 }
 
 /**
- * Update URL parameters without reloading
+ * Update URL parameters
  */
 function updateURL() {
     const params = calc.buildURLParams({
@@ -445,13 +469,11 @@ function updateURL() {
  * Perform calculation and update UI
  */
 function calculate() {
-    // Validate inputs
     if (!state.ticker || state.pricePerShare <= 0 || state.quantity <= 0) {
         els.resultsCard.hidden = true;
         els.impactSection.hidden = true;
         els.breakEvenSection.hidden = true;
         els.brokerSection.hidden = true;
-        els.emptyState.hidden = false;
         return;
     }
 
@@ -466,7 +488,6 @@ function calculate() {
         minBrokerageFee = broker?.minFee || 0;
     }
 
-    // Validate
     const validation = calc.validateInputs({
         pricePerShare: state.pricePerShare,
         quantity: state.quantity,
@@ -478,7 +499,6 @@ function calculate() {
         return;
     }
 
-    // Calculate trade
     const result = calc.calculateTrade(
         state.direction,
         state.pricePerShare,
@@ -487,69 +507,60 @@ function calculate() {
         minBrokerageFee
     );
 
-    // Hide empty state, show results
-    els.emptyState.hidden = true;
     els.resultsCard.hidden = false;
 
-    // Render results
     renderResults(result);
     renderImpactTable();
     renderBreakEven();
     renderBrokerComparison();
 
-    // Update URL
     updateURL();
 }
 
 /**
- * Render main results
- * @param {TradeResult} result - Calculation result
+ * Render main results with animations
  */
 function renderResults(result) {
     const stock = data.getStock(state.ticker);
     const feeStatus = calc.getFeeStatus(result.feePercentage);
 
-    // Update hero
+    // Update hero with animation
     els.resultsLabel.textContent = result.amountLabel;
-    els.resultsAmount.textContent = calc.formatKES(result.totalAmount);
 
-    // Update fee percentage and emoji
+    // Animate the main amount
+    animateNumber(els.resultsAmount, result.totalAmount, 800, 'KES ', '');
+
+    // Update fee percentage and badge
     els.feePercentValue.textContent = result.feePercentage.toFixed(2);
     els.feeEmoji.textContent = feeStatus.emoji;
 
-    // Update fee thermometer
-    const thermometerHeight = Math.min(result.feePercentage, 10) * 10; // Cap at 10% for visual
-    els.feeThermometerBar.style.height = `${thermometerHeight}%`;
-    els.feeThermometerBar.style.background = feeStatus.color;
+    // Update fee badge class
+    els.feeBadge.className = 'fee-badge fee-' + feeStatus.class;
+
+    // Update fee bar with animation
+    const barWidth = Math.min(result.feePercentage / 5, 1) * 100;
+    els.feeBarFill.style.width = `${barWidth}%`;
+    els.feeBarFill.className = `fee-bar-fill fee-${feeStatus.class}`;
+    els.feeBarFill.parentElement.style.setProperty('--fill-width', `${barWidth}%`);
 
     // Update fee amount
-    els.feeAmount.textContent = `Fees: ${calc.formatKES(result.totalFees)}`;
+    els.feeAmount.textContent = calc.formatKES(result.totalFees);
 
-    // Stamp duty warning
+    // Stamp duty alert
     const stampDutyPct = (result.stampDuty / result.consideration) * 100;
     if (calc.isStampDutySignificant(result.stampDuty, result.consideration)) {
-        els.stampDutyWarning.hidden = false;
+        els.stampDutyAlert.hidden = false;
         els.stampDutyAmount.textContent = result.stampDuty.toFixed(2);
         els.stampDutyPercent.textContent = stampDutyPct.toFixed(2);
     } else {
-        els.stampDutyWarning.hidden = true;
-    }
-
-    // Minimum fee warning
-    if (result.minFeeApplied) {
-        els.minFeeWarning.hidden = false;
-        const broker = data.getBroker(state.brokerId);
-        const minFee = broker?.minFee || 0;
-        els.minFeeWarningText.textContent = `Minimum broker fee of KES ${minFee} applied. Your trade value is below the threshold.`;
-    } else {
-        els.minFeeWarning.hidden = true;
+        els.stampDutyAlert.hidden = true;
     }
 
     // Summary
     const action = state.direction === 'buy' ? 'Buying' : 'Selling';
-    els.resultsSummary.textContent = `${action} ${state.quantity} shares of ${state.ticker} at KES ${state.pricePerShare.toFixed(2)} ${state.direction === 'buy' ? 'costs you' : 'you receive'} ${calc.formatKES(result.totalAmount)}. Fees eat ${calc.formatKES(result.totalFees)} (${result.feePercentage.toFixed(2)}%).`;
+    els.resultsSummary.textContent = `${action} ${state.quantity} ${state.ticker} @ KES ${state.pricePerShare.toFixed(2)} = ${calc.formatKES(result.totalAmount)}`;
 
-    // Breakdown table
+    // Breakdown
     els.bdSharesValue.textContent = calc.formatKES(result.consideration);
     els.bdBrokerage.textContent = calc.formatKES(result.brokerage);
     els.bdBrokerageRate.textContent = state.direction === 'buy'
@@ -573,7 +584,6 @@ function renderImpactTable() {
     const stock = data.getStock(state.ticker);
     if (!stock) return;
 
-    // Get broker settings
     let brokerageRate, minBrokerageFee;
     if (state.brokerId === 'custom') {
         brokerageRate = state.customRate || 0.015;
@@ -588,10 +598,8 @@ function renderImpactTable() {
     const impacts = calc.calculateFeeImpact(stock.price, quantities, brokerageRate, minBrokerageFee);
     const sweetSpot = calc.calculateSweetSpot(stock.price);
 
-    // Clear existing rows
     els.impactTableBody.innerHTML = '';
 
-    // Add rows using safe DOM methods
     impacts.forEach(impact => {
         const row = document.createElement('tr');
         const status = calc.getFeeStatus(impact.feePercentage);
@@ -599,14 +607,16 @@ function renderImpactTable() {
         row.appendChild(createCell(impact.quantity.toString()));
         row.appendChild(createCell(calc.formatKES(impact.tradeValue)));
         row.appendChild(createCell(calc.formatKES(impact.totalFees)));
-        row.appendChild(createCell(`${status.emoji} ${impact.feePercentage.toFixed(2)}%`));
+
+        const feeCell = createCell(`${status.emoji} ${impact.feePercentage.toFixed(2)}%`);
+        row.appendChild(feeCell);
+
         els.impactTableBody.appendChild(row);
     });
 
-    // Show section
     els.impactSection.hidden = false;
 
-    // Verdict box - use safe DOM methods
+    // Verdict
     const verdict = calc.getVerdict(state.quantity, calc.calculateBuy({
         pricePerShare: stock.price,
         quantity: state.quantity,
@@ -615,21 +625,36 @@ function renderImpactTable() {
     }).feePercentage, sweetSpot);
 
     els.verdictBox.innerHTML = '';
-    const verdictDiv1 = createElement('div', 'verdict-entry');
-    verdictDiv1.style.marginBottom = '0.5rem';
-    verdictDiv1.appendChild(createElement('span', '', verdict.emoji));
-    verdictDiv1.appendChild(createElement('span', '', ''));
-    verdictDiv1.lastChild.textContent = ` ${verdict.class === 'optimal' ? 'Sweet spot:' : 'Verdict:'} ${verdict.message}`;
+    els.verdictBox.className = `verdict-card verdict-card--${verdict.class}`;
 
-    const verdictDiv2 = createElement('div', 'verdict-entry');
-    verdictDiv2.style.fontSize = '0.8rem';
-    verdictDiv2.style.opacity = '0.8';
-    verdictDiv2.appendChild(createElement('span', '', '💡'));
-    verdictDiv2.appendChild(createElement('span', '', ''));
-    verdictDiv2.lastChild.textContent = ` Sweet spot: ${sweetSpot} shares (${calc.formatKES(sweetSpot * stock.price)})`;
+    const verdictKicker = document.createElement('p');
+    verdictKicker.className = 'verdict-kicker';
+    verdictKicker.textContent = `${verdict.emoji} Fee guidance`;
 
-    els.verdictBox.appendChild(verdictDiv1);
-    els.verdictBox.appendChild(verdictDiv2);
+    const verdictTitle = document.createElement('p');
+    verdictTitle.className = 'verdict-title';
+    verdictTitle.textContent = verdict.title;
+
+    const verdictP = document.createElement('p');
+    verdictP.className = 'verdict-message';
+    verdictP.textContent = verdict.message;
+
+    els.verdictBox.appendChild(verdictKicker);
+    els.verdictBox.appendChild(verdictTitle);
+    els.verdictBox.appendChild(verdictP);
+
+    if (verdict.sharesToSweetSpot > 0 && verdict.actionLabel) {
+        const quickAction = document.createElement('button');
+        quickAction.type = 'button';
+        quickAction.className = 'verdict-action';
+        quickAction.textContent = verdict.actionLabel;
+        quickAction.addEventListener('click', () => {
+            state.quantity = verdict.sweetSpot;
+            els.quantityInput.value = verdict.sweetSpot;
+            calculate();
+        });
+        els.verdictBox.appendChild(quickAction);
+    }
 }
 
 /**
@@ -639,7 +664,6 @@ function renderBreakEven() {
     const stock = data.getStock(state.ticker);
     if (!stock) return;
 
-    // Get broker settings
     let brokerageRate, minBrokerageFee;
     if (state.brokerId === 'custom') {
         brokerageRate = state.customRate || 0.015;
@@ -652,14 +676,14 @@ function renderBreakEven() {
 
     const breakEven = calc.calculateBreakEven(stock.price, state.quantity, brokerageRate, minBrokerageFee);
 
-    els.breakEvenMain.textContent = `${state.ticker} needs to reach ${calc.formatKES(breakEven.breakEvenPrice)} (+${breakEven.breakEvenPct.toFixed(2)}%) before you break even.`;
-    els.breakEvenSub.textContent = `The stock must rise ${breakEven.breakEvenPct.toFixed(2)}% before you make even one shilling in profit. If it only rises ${(breakEven.breakEvenPct * 0.5).toFixed(2)}%, you are still losing money.`;
+    els.breakEvenMain.textContent = `${state.ticker} must reach ${calc.formatKES(breakEven.breakEvenPrice)} (+${breakEven.breakEvenPct.toFixed(2)}%) to break even.`;
+    els.breakEvenSub.textContent = `The stock needs to rise ${breakEven.breakEvenPct.toFixed(2)}% before you make any profit.`;
 
     els.breakEvenSection.hidden = false;
 }
 
 /**
- * Render broker comparison table
+ * Render broker comparison
  */
 function renderBrokerComparison() {
     const stock = data.getStock(state.ticker);
@@ -668,28 +692,25 @@ function renderBrokerComparison() {
     const brokers = data.getAllBrokers().filter(b => b.id !== 'custom');
     const comparison = calc.compareBrokers(stock.price, state.quantity, brokers);
 
-    // Clear existing rows
     els.brokerTableBody.innerHTML = '';
 
-    // Add rows using safe DOM methods
     comparison.forEach((comp, index) => {
-        const row = document.createElement('tr');
+        const card = document.createElement('div');
         const status = calc.getFeeStatus(comp.feePercentage);
-        const bestBadge = index === 0 ? ' ⭐' : '';
+        const bestClass = index === 0 ? 'best' : '';
 
-        row.appendChild(createCell(comp.brokerName + bestBadge));
-        row.appendChild(createCell(`${(comp.brokerageRate * 100).toFixed(2)}%`));
-        row.appendChild(createCell(calc.formatKES(comp.totalFees)));
-        row.appendChild(createCell(`${status.emoji} ${comp.feePercentage.toFixed(2)}%`));
-        els.brokerTableBody.appendChild(row);
+        card.className = `broker-item ${bestClass}`;
+        card.innerHTML = `
+            <div class="broker-name">${comp.brokerName}</div>
+            <div class="broker-rate">${(comp.brokerageRate * 100).toFixed(2)}%</div>
+            <div class="broker-fee">${calc.formatKES(comp.totalFees)}</div>
+            <div class="broker-meta">${status.emoji} ${comp.feePercentage.toFixed(2)}%</div>
+        `;
+        els.brokerTableBody.appendChild(card);
     });
 
     els.brokerSection.hidden = false;
 }
-
-// ============================================
-// Share Handler
-// ============================================
 
 /**
  * Handle share button click
@@ -698,7 +719,6 @@ async function handleShare() {
     const stock = data.getStock(state.ticker);
     if (!stock) return;
 
-    // Get broker settings
     let brokerageRate, minBrokerageFee;
     if (state.brokerId === 'custom') {
         brokerageRate = state.customRate || 0.015;
@@ -737,22 +757,14 @@ async function handleShare() {
     });
 }
 
-// ============================================
-// Service Worker Registration
-// ============================================
-
 /**
- * Register service worker for PWA functionality
+ * Register service worker
  */
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
-            .then(reg => {
-                console.log('Service worker registered:', reg);
-            })
-            .catch(err => {
-                console.log('Service worker registration failed:', err);
-            });
+            .then(reg => console.log('Service worker registered:', reg))
+            .catch(err => console.log('Service worker registration failed:', err));
     }
 }
 
@@ -765,16 +777,3 @@ if (document.readyState === 'loading') {
 } else {
     init();
 }
-
-// Type definitions for JSDoc
-
-/**
- * @typedef {Object} CalculatorState
- * @property {string} direction - 'buy' or 'sell'
- * @property {string|null} ticker - Stock ticker symbol
- * @property {string} brokerId - Broker ID
- * @property {number} pricePerShare - Price per share in KES
- * @property {number} quantity - Number of shares
- * @property {number|null} customRate - Custom broker rate (if custom broker)
- * @property {number} customMinFee - Custom minimum fee (if custom broker)
- */

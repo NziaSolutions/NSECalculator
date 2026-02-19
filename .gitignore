@@ -10,3 +10,7 @@ node_modules/
 
 # Logs
 npm-debug.log*
+
+.github/skills/*
+.github/copilot-instructions.md
+.github/prompt2.md

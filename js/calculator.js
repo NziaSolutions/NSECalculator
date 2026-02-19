@@ -396,38 +396,60 @@ function isStampDutySignificant(stampDuty, consideration) {
  * @returns {Verdict} Verdict object with emoji and message
  */
 function getVerdict(quantity, feePercentage, sweetSpot) {
+    const sharesToSweetSpot = Math.max(0, sweetSpot - quantity);
+
     if (quantity >= sweetSpot) {
         return {
             emoji: '🟢',
-            message: `Optimal — ${quantity} shares is at or near the sweet spot (${sweetSpot} shares). Fees are minimized.`,
-            class: 'optimal'
+            title: 'Sweet spot reached',
+            message: `You are at ${quantity} shares. Sweet spot starts at ${sweetSpot} shares, where fixed stamp duty impact is minimized.`,
+            class: 'optimal',
+            sweetSpot,
+            sharesToSweetSpot,
+            actionLabel: ''
         };
     }
     if (feePercentage > 5) {
         return {
             emoji: '🔴',
-            message: `Avoid — fees are eating ${feePercentage.toFixed(2)}% of this trade. Consider saving until you can buy at least ${sweetSpot} shares.`,
-            class: 'avoid'
+            title: 'Too expensive right now',
+            message: `Fees are ${feePercentage.toFixed(2)}% on this trade. Sweet spot is ${sweetSpot} shares — add ${sharesToSweetSpot} more shares to reduce fixed-fee drag.`,
+            class: 'avoid',
+            sweetSpot,
+            sharesToSweetSpot,
+            actionLabel: `Use sweet spot (${sweetSpot} shares)`
         };
     }
     if (feePercentage > 3) {
         return {
             emoji: '🟠',
-            message: `High fees — consider buying more shares to reduce the percentage impact.`,
-            class: 'high'
+            title: 'High fee zone',
+            message: `Sweet spot is ${sweetSpot} shares. Add ${sharesToSweetSpot} more shares to bring fees closer to efficient levels.`,
+            class: 'high',
+            sweetSpot,
+            sharesToSweetSpot,
+            actionLabel: `Use sweet spot (${sweetSpot} shares)`
         };
     }
     if (feePercentage > 1.6) {
         return {
             emoji: '🟡',
-            message: `Acceptable — fees are moderate. Buying ${sweetSpot - quantity} more shares would bring fees under 1.6%.`,
-            class: 'moderate'
+            title: 'Near efficient range',
+            message: `Sweet spot is at ${sweetSpot} shares — add ${sharesToSweetSpot} more shares to target fees below 1.6%.`,
+            class: 'moderate',
+            sweetSpot,
+            sharesToSweetSpot,
+            actionLabel: `Use sweet spot (${sweetSpot} shares)`
         };
     }
     return {
         emoji: '🟢',
-        message: `Good range — fees are reasonable.`,
-        class: 'good'
+        title: 'Good fee range',
+        message: `Fees are already reasonable. Sweet spot is ${sweetSpot} shares if you want to squeeze costs further.`,
+        class: 'good',
+        sweetSpot,
+        sharesToSweetSpot,
+        actionLabel: sharesToSweetSpot > 0 ? `Use sweet spot (${sweetSpot} shares)` : ''
     };
 }
 
@@ -629,8 +651,12 @@ export {
 /**
  * @typedef {Object} Verdict
  * @property {string} emoji - Emoji indicator
+ * @property {string} title - Verdict title
  * @property {string} message - Verdict message
  * @property {string} class - CSS class
+ * @property {number} sweetSpot - Sweet spot quantity
+ * @property {number} sharesToSweetSpot - Additional shares needed
+ * @property {string} actionLabel - CTA text for quick action
  */
 
 /**

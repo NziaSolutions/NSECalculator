@@ -3,327 +3,650 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Calculate the exact cost of buying and selling shares on the Nairobi Securities Exchange. Know what you'll really pay before you trade.">
-    <meta name="theme-color" content="#064e3b">
-    <title>NSE Fee Calculator — Know What You'll Really Pay</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <meta name="description" content="See exactly what you'll pay on every NSE trade. Small trades can cost 8%+ in fees due to stamp duty. Calculate brokerage, levies, and break-even before trading.">
+    <meta name="theme-color" content="#f5f7fb">
+    <title>NSE Fee Calculator — Stop losing 8% on small trades</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇰🇪</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%236366f1'/><stop offset='100%' stop-color='%23ec4899'/></linearGradient></defs><rect fill='url(%23g)' rx='20' width='100' height='100'/><text x='50' y='70' font-size='55' text-anchor='middle' fill='white'>🇰🇪</text></svg>">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- Subtle Background -->
+    <div class="bg-gradient" aria-hidden="true"></div>
+
     <div class="page-wrapper">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-inner">
-                <div class="logo">
-                    <span class="logo-flag">🇰🇪</span>
-                    <h1 class="logo-text">NSE Fee Calculator</h1>
-                </div>
-                <p class="tagline">Know what you'll really pay</p>
+        <!-- Navigation -->
+        <header class="top-nav">
+            <div class="nav-inner">
+                <a href="#top" class="brand">
+                    <span class="brand-mark">🇰🇪</span>
+                    <span class="brand-text">
+                        <span class="brand-title">NSE Calc</span>
+                        <span class="brand-tagline">Know your true cost</span>
+                    </span>
+                </a>
+                <nav class="nav-links">
+                    <a href="#why-it-matters">Why it matters</a>
+                    <a href="#calculator">Calculator</a>
+                    <a href="#features">Features</a>
+                    <a href="#learn">Learn</a>
+                </nav>
+                <a class="btn btn-small btn-primary" href="#calculator">Open calculator</a>
             </div>
         </header>
 
-        <!-- Main Calculator -->
-        <main class="main">
-            <section class="calculator-section">
-                <!-- Trade Direction Toggle -->
-                <div class="direction-toggle">
-                    <button class="direction-btn direction-btn--buy active" data-direction="buy" aria-pressed="true">
-                        <span class="direction-icon">📈</span>
-                        <span>BUY</span>
-                    </button>
-                    <button class="direction-btn direction-btn--sell" data-direction="sell" aria-pressed="false">
-                        <span class="direction-icon">📉</span>
-                        <span>SELL</span>
-                    </button>
-                </div>
-
-                <!-- Input Form -->
-                <form class="calculator-form" id="calculatorForm">
-                    <!-- Stock Selection -->
-                    <div class="form-group">
-                        <label for="stockSelect" class="form-label">Stock</label>
-                        <div class="select-wrapper">
-                            <select id="stockSelect" class="form-select" required>
-                                <option value="">Select a stock...</option>
-                            </select>
-                            <span class="select-icon">▼</span>
-                        </div>
+        <!-- Main Content -->
+        <main class="main" id="top">
+            <!-- Hero -->
+            <section class="hero">
+                <div class="hero-content">
+                    <div class="hero-badge">
+                        <span class="hero-badge-icon">📊</span>
+                        <span class="hero-badge-text">Built for Kenyan retail investors</span>
+                    </div>
+                    <h1 class="hero-title">
+                        <span class="hero-title-line">Small trades are</span>
+                        <span class="hero-title-line hero-title-line--accent">losing you 8%+ in fees.</span>
+                    </h1>
+                    <p class="hero-lead">Stamp duty, broker charges, and statutory levies eat returns on small NSE trades. Calculate exactly what you'll pay — and find the sweet spot — before you trade.</p>
+                    <div class="hero-actions">
+                        <a class="btn btn-primary" href="#calculator">
+                            Calculate my fees
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                        <a class="btn btn-ghost" href="#why-it-matters">Why fees matter</a>
                     </div>
 
-                    <!-- Broker Selection -->
-                    <div class="form-group">
-                        <label for="brokerSelect" class="form-label">Broker</label>
-                        <div class="select-wrapper">
-                            <select id="brokerSelect" class="form-select" required>
-                                <option value="">Select a broker...</option>
-                            </select>
-                            <span class="select-icon">▼</span>
+                    <!-- Proof by Example -->
+                    <div class="hero-proof">
+                        <div class="proof-header">
+                            <span class="proof-label">Example from today's market</span>
                         </div>
-                        <p class="form-hint" id="brokerHint"></p>
-                    </div>
-
-                    <!-- Price Input -->
-                    <div class="form-group">
-                        <label for="priceInput" class="form-label">Price per share (KES)</label>
-                        <div class="price-input-wrapper">
-                            <input type="number" id="priceInput" class="form-input form-input--price" step="0.01" min="0.01" placeholder="0.00" required>
-                            <span class="price-date" id="priceDateBadge"></span>
-                        </div>
-                        <p class="form-hint">Tap to edit with current price</p>
-                    </div>
-
-                    <!-- Quantity Input -->
-                    <div class="form-group">
-                        <label for="quantityInput" class="form-label">Number of shares</label>
-                        <div class="quantity-wrapper">
-                            <button type="button" class="quantity-btn quantity-btn--minus" id="qtyMinus" aria-label="Decrease quantity">−</button>
-                            <input type="number" id="quantityInput" class="form-input form-input--quantity" value="10" min="1" required>
-                            <button type="button" class="quantity-btn quantity-btn--plus" id="qtyPlus" aria-label="Increase quantity">+</button>
-                        </div>
-                    </div>
-
-                    <!-- Custom Broker (hidden by default) -->
-                    <div class="form-group form-group--custom" id="customBrokerGroup" hidden>
-                        <div class="custom-broker-grid">
-                            <div>
-                                <label for="customRate" class="form-label">Custom rate (%)</label>
-                                <input type="number" id="customRate" class="form-input" step="0.01" min="0" max="100" placeholder="1.50">
-                            </div>
-                            <div>
-                                <label for="customMinFee" class="form-label">Min fee (KES)</label>
-                                <input type="number" id="customMinFee" class="form-input" step="1" min="0" placeholder="0">
-                            </div>
-                        </div>
-                    </div>
-                </form>
-
-                <!-- Results Card -->
-                <div class="results-card" id="resultsCard" role="region" aria-live="polite" hidden>
-                    <!-- Primary Hero -->
-                    <div class="results-hero">
-                        <div class="results-main">
-                            <p class="results-label" id="resultsLabel">YOU PAY</p>
-                            <p class="results-amount" id="resultsAmount">KES 0.00</p>
-                        </div>
-                        <div class="results-meter">
-                            <div class="fee-thermometer">
-                                <div class="fee-thermometer-bar" id="feeThermometerBar"></div>
-                                <div class="fee-thermometer-markers">
-                                    <span class="marker"></span>
-                                    <span class="marker"></span>
-                                    <span class="marker"></span>
-                                    <span class="marker"></span>
+                        <div class="proof-cards">
+                            <div class="proof-card proof-card--warning">
+                                <div class="proof-ticker">ABSA</div>
+                                <div class="proof-trade">Buy 1 share @ KES 30.20</div>
+                                <div class="proof-divider"></div>
+                                <div class="proof-fees">
+                                    <span class="proof-fees-label">You pay</span>
+                                    <span class="proof-fees-amount">KES 32.67</span>
+                                </div>
+                                <div class="proof-percent">
+                                    <span class="proof-percent-value">8.18%</span>
+                                    <span class="proof-percent-label">in fees</span>
                                 </div>
                             </div>
-                            <p class="fee-percentage" id="feePercentage">
-                                <span id="feePercentValue">0.00</span>%
-                                <span class="fee-emoji" id="feeEmoji">🟢</span>
-                            </p>
-                            <p class="fee-amount">Fees: <span id="feeAmount">KES 0.00</span></p>
-                        </div>
-                    </div>
-
-                    <!-- Stamp Duty Warning -->
-                    <div class="stamp-duty-warning" id="stampDutyWarning" hidden>
-                        <span class="warning-icon">⚠️</span>
-                        <p>Stamp duty: <strong>KES <span id="stampDutyAmount">0.00</span></strong> — <span id="stampDutyPercent">0.00</span>% of trade value</p>
-                    </div>
-
-                    <!-- Summary -->
-                    <p class="results-summary" id="resultsSummary"></p>
-
-                    <!-- Expandable Breakdown -->
-                    <details class="breakdown-details">
-                        <summary class="breakdown-toggle">Full fee breakdown</summary>
-                        <div class="breakdown-table">
-                            <div class="breakdown-row">
-                                <span>Shares Value</span>
-                                <span id="bdSharesValue">KES 0.00</span>
+                            <div class="proof-arrow">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M9 18l6-6-6-6"/>
+                                </svg>
                             </div>
-                            <div class="breakdown-row">
-                                <span>Brokerage <small id="bdBrokerageRate"></small></span>
-                                <span id="bdBrokerage">KES 0.00</span>
-                            </div>
-                            <div class="breakdown-row">
-                                <span>VAT on Brokerage (16%)</span>
-                                <span id="bdVat">KES 0.00</span>
-                            </div>
-                            <div class="breakdown-row">
-                                <span>NSE Levy (0.12%)</span>
-                                <span id="bdNse">KES 0.00</span>
-                            </div>
-                            <div class="breakdown-row">
-                                <span>CMA Levy (0.08%)</span>
-                                <span id="bdCma">KES 0.00</span>
-                            </div>
-                            <div class="breakdown-row">
-                                <span>CDSC Fee (0.08%)</span>
-                                <span id="bdCdsc">KES 0.00</span>
-                            </div>
-                            <div class="breakdown-row">
-                                <span>ICF Levy (0.01%)</span>
-                                <span id="bdIcf">KES 0.00</span>
-                            </div>
-                            <div class="breakdown-row breakdown-row--stamp">
-                                <span>Stamp Duty</span>
-                                <span id="bdStamp">KES 0.00</span>
-                            </div>
-                            <div class="breakdown-row breakdown-row--total">
-                                <span>Total Fees</span>
-                                <span id="bdTotalFees">KES 0.00</span>
-                            </div>
-                            <div class="breakdown-row breakdown-row--grand-total">
-                                <span id="bdTotalLabel">TOTAL YOU PAY</span>
-                                <span id="bdGrandTotal">KES 0.00</span>
+                            <div class="proof-card proof-card--success">
+                                <div class="proof-ticker">ABSA</div>
+                                <div class="proof-trade">Buy 332 shares @ KES 30.20</div>
+                                <div class="proof-divider"></div>
+                                <div class="proof-fees">
+                                    <span class="proof-fees-label">Fee drops to</span>
+                                    <span class="proof-fees-amount">1.61%</span>
+                                </div>
+                                <div class="proof-saved">
+                                    <span class="proof-saved-label">You save</span>
+                                    <span class="proof-saved-value">KES 102.47</span>
+                                </div>
                             </div>
                         </div>
-                    </details>
-
-                    <!-- Minimum Fee Warning -->
-                    <div class="min-fee-warning" id="minFeeWarning" hidden>
-                        <span class="warning-icon">⚠️</span>
-                        <p id="minFeeWarningText"></p>
+                        <p class="proof-footnote">Stamp duty is KES 2 per KES 10,000 bracket. The same KES 2 becomes negligible on larger trades.</p>
                     </div>
-
-                    <!-- Share Button -->
-                    <button class="share-btn" id="shareBtn" type="button">
-                        <span>📤</span> Share this result
-                    </button>
-                </div>
-
-                <!-- Loading State -->
-                <div class="loading-state" id="loadingState">
-                    <div class="spinner"></div>
-                    <p>Loading stock data...</p>
-                </div>
-
-                <!-- Empty State -->
-                <div class="empty-state" id="emptyState">
-                    <span class="empty-icon">💡</span>
-                    <p>Select a stock and enter your trade details to see the true cost.</p>
                 </div>
             </section>
 
-            <!-- Fee Impact Table -->
-            <section class="impact-section" id="impactSection" hidden>
-                <h2 class="section-title">
-                    <span>📊</span> Fee Impact by Quantity
-                </h2>
-                <p class="section-subtitle">See how fees change based on trade size. Bigger trades = lower percentage.</p>
+            <!-- Why It Matters -->
+            <section class="trust-section" id="why-it-matters">
+                <div class="section-heading">
+                    <p class="eyebrow">The gap we solve</p>
+                    <h2 class="section-title">NSE investors see the share price, but not the true trade cost.</h2>
+                    <p class="section-lead">This calculator turns hidden charges into one clear number before you place an order — so you know exactly what you'll pay or receive.</p>
+                </div>
 
-                <div class="impact-table-wrapper">
+                <div class="aha-panel" role="note" aria-label="What this tool solves">
+                    <div class="aha-card">
+                        <p class="aha-label">Without this tool</p>
+                        <p class="aha-text">You estimate fees from brokerage only, then discover later that stamp duty and levies pushed your break-even much higher.</p>
+                    </div>
+                    <div class="aha-divider" aria-hidden="true">→</div>
+                    <div class="aha-card aha-card--solution">
+                        <p class="aha-label">With NSE Fee Calculator</p>
+                        <p class="aha-text">You see brokerage, VAT, statutory levies, stamp duty, and break-even in one place — tuned for NSE realities and Kenyan retail trade sizes.</p>
+                    </div>
+                </div>
+
+                <div class="fee-breakdown-visual">
+                    <div class="breakdown-visual-row">
+                        <div class="breakdown-bar" style="--width: 57%">
+                            <span class="breakdown-label" data-short="Brokerage + VAT">Brokerage + VAT</span>
+                            <span class="breakdown-percent">57%</span>
+                        </div>
+                    </div>
+                    <div class="breakdown-visual-row">
+                        <div class="breakdown-bar breakdown-bar--statutory" style="--width: 29%">
+                            <span class="breakdown-label" data-short="NSE + CMA + CDSC + ICF">NSE + CMA + CDSC + ICF</span>
+                            <span class="breakdown-percent">29%</span>
+                        </div>
+                    </div>
+                    <div class="breakdown-visual-row">
+                        <div class="breakdown-bar breakdown-bar--stamp" style="--width: 14%">
+                            <span class="breakdown-label" data-short="Stamp Duty">Stamp Duty (on 1 share)</span>
+                            <span class="breakdown-percent">14%</span>
+                        </div>
+                    </div>
+                    <p class="breakdown-footnote">On a single ABSA share (KES 30.20), the KES 2 stamp duty is 6.6% of the trade value alone.</p>
+                </div>
+
+                <div class="trust-grid">
+                    <div class="trust-item">
+                        <span class="trust-icon">📜</span>
+                        <h3>Stamp Duty</h3>
+                        <p>KES 2 per KES 10,000 bracket — charged separately on <em>every</em> trade, buy and sell.</p>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-icon">🏦</span>
+                        <h3>Statutory Levies</h3>
+                        <p>NSE (0.12%), CMA (0.08%), CDSC (0.08%), and ICF (0.01%) apply to all trades.</p>
+                    </div>
+                    <div class="trust-item">
+                        <span class="trust-icon">💼</span>
+                        <h3>Broker Rates Vary</h3>
+                        <p>From 1.00% to 1.50% — and some brokers charge minimum fees that hit small trades hard.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="calculator-shell" id="calculator">
+                <div class="section-heading">
+                    <p class="eyebrow">Calculator</p>
+                    <h2 class="section-title">Your trade, fully priced</h2>
+                    <p class="section-lead">Results update instantly as you adjust inputs.</p>
+                </div>
+
+                <div class="calculator-stack">
+                    <!-- Calculator Card -->
+                    <section class="calc-card fade-in-up" style="--delay: 100ms">
+                <!-- Direction Toggle -->
+                <div class="direction-switch">
+                    <button class="dir-btn dir-btn--buy active" data-direction="buy" aria-pressed="true">
+                        <span class="dir-icon">▲</span>
+                        <span>BUY</span>
+                    </button>
+                    <button class="dir-btn dir-btn--sell" data-direction="sell" aria-pressed="false">
+                        <span>SELL</span>
+                        <span class="dir-icon">▼</span>
+                    </button>
+                    <div class="dir-slider"></div>
+                </div>
+
+                <!-- Input Grid -->
+                <div class="input-grid">
+                    <!-- Stock -->
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span>Stock</span>
+                            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                            </svg>
+                        </label>
+                        <div class="input-wrapper">
+                            <select id="stockSelect" class="input-field input-select" required>
+                                <option value="">Choose a stock...</option>
+                            </select>
+                            <svg class="input-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Broker -->
+                    <div class="input-group">
+                        <label class="input-label">
+                            <span>Broker</span>
+                            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                            </svg>
+                        </label>
+                        <div class="input-wrapper">
+                            <select id="brokerSelect" class="input-field input-select" required>
+                                <option value="">Choose broker...</option>
+                            </select>
+                            <svg class="input-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </div>
+                        <p class="input-hint" id="brokerHint"></p>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="input-group input-group--full">
+                        <label class="input-label">
+                            <span>Price per share (KES)</span>
+                            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/>
+                            </svg>
+                        </label>
+                        <div class="input-wrapper input-wrapper--price">
+                            <input type="number" id="priceInput" class="input-field input-price" step="0.01" min="0.01" placeholder="0.00" required>
+                            <span class="price-badge" id="priceDateBadge"></span>
+                        </div>
+                        <p class="input-hint">Enter current market price</p>
+                    </div>
+
+                    <!-- Quantity -->
+                    <div class="input-group input-group--full">
+                        <label class="input-label">
+                            <span>Number of shares</span>
+                            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8"/><path d="M8 12h8"/>
+                            </svg>
+                        </label>
+                        <div class="quantity-stepper">
+                            <button class="qty-btn" id="qtyMinus" aria-label="Decrease">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                            </button>
+                            <input type="number" id="quantityInput" class="input-field input-qty" value="10" min="1" required>
+                            <button class="qty-btn" id="qtyPlus" aria-label="Increase">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Custom Broker -->
+                    <div class="input-group input-group--custom" id="customBrokerGroup" hidden>
+                        <div class="custom-grid">
+                            <div class="input-wrapper">
+                                <input type="number" id="customRate" class="input-field" placeholder="Rate %" step="0.01">
+                            </div>
+                            <div class="input-wrapper">
+                                <input type="number" id="customMinFee" class="input-field" placeholder="Min fee" step="1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    </section>
+
+            <!-- Results Section -->
+                    <section class="results-section" id="resultsCard" aria-live="polite" hidden>
+                <!-- Main Result Card -->
+                <div class="result-main fade-in-up" style="--delay: 0ms">
+                    <div class="result-header">
+                        <span class="result-action" id="resultsLabel">YOU PAY</span>
+                        <div class="result-pulse"></div>
+                    </div>
+                    <div class="result-amount-wrapper">
+                        <span class="result-currency">KES</span>
+                        <span class="result-amount" id="resultsAmount">0.00</span>
+                    </div>
+                    <div class="result-meta">
+                        <div class="fee-badge" id="feeBadge">
+                            <span class="fee-emoji" id="feeEmoji">🟢</span>
+                            <span class="fee-text"><span id="feePercentValue">0.00</span>% fees</span>
+                        </div>
+                        <span class="fee-divider">•</span>
+                        <span class="fee-detail" id="feeAmount">KES 0.00</span>
+                    </div>
+                </div>
+
+                <!-- Fee Visualizer -->
+                <div class="fee-visualizer fade-in-up" style="--delay: 50ms">
+                    <div class="fee-bar-container">
+                        <div class="fee-bar-bg">
+                            <div class="fee-bar-fill" id="feeBarFill"></div>
+                            <div class="fee-bar-glow"></div>
+                        </div>
+                        <div class="fee-markers">
+                            <span class="marker marker-start"></span>
+                            <span class="marker marker-16"></span>
+                            <span class="marker marker-30"></span>
+                            <span class="marker marker-50"></span>
+                        </div>
+                    </div>
+                    <div class="fee-labels">
+                        <span class="label-start">Low</span>
+                        <span class="label-16">1.6%</span>
+                        <span class="label-30">3.0%</span>
+                        <span class="label-50">5.0%+</span>
+                    </div>
+                </div>
+
+                <!-- Stamp Duty Alert -->
+                <div class="alert-box alert--stamp" id="stampDutyAlert" hidden>
+                    <span class="alert-icon">⚠️</span>
+                    <div class="alert-content">
+                        <strong>Stamp Duty Impact</strong>
+                        <p>KES <span id="stampDutyAmount">0.00</span> = <span id="stampDutyPercent">0.00</span>% of trade</p>
+                    </div>
+                </div>
+
+                <!-- Expandable Breakdown -->
+                <details class="breakdown-details fade-in-up" style="--delay: 100ms">
+                    <summary class="breakdown-toggle">
+                        <span>See full breakdown</span>
+                        <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </summary>
+                    <div class="breakdown-list">
+                        <div class="breakdown-item">
+                            <span>Shares Value</span>
+                            <span id="bdSharesValue">KES 0.00</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>Brokerage <small id="bdBrokerageRate"></small></span>
+                            <span id="bdBrokerage">KES 0.00</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>VAT (16%)</span>
+                            <span id="bdVat">KES 0.00</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>NSE Levy</span>
+                            <span id="bdNse">KES 0.00</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>CMA Levy</span>
+                            <span id="bdCma">KES 0.00</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>CDSC Fee</span>
+                            <span id="bdCdsc">KES 0.00</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>ICF Levy</span>
+                            <span id="bdIcf">KES 0.00</span>
+                        </div>
+                        <div class="breakdown-item breakdown-item--stamp">
+                            <span>Stamp Duty</span>
+                            <span id="bdStamp">KES 0.00</span>
+                        </div>
+                        <div class="breakdown-item breakdown-item--total">
+                            <span>Total Fees</span>
+                            <span id="bdTotalFees">KES 0.00</span>
+                        </div>
+                        <div class="breakdown-item breakdown-item--grand">
+                            <span id="bdTotalLabel">TOTAL</span>
+                            <span id="bdGrandTotal">KES 0.00</span>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Summary -->
+                <p class="result-summary fade-in-up" id="resultsSummary" style="--delay: 150ms"></p>
+
+                <!-- Share Button -->
+                <button class="share-btn fade-in-up" id="shareBtn" style="--delay: 200ms">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                    </svg>
+                    <span>Share Result</span>
+                </button>
+                    </section>
+
+            <!-- Impact Table -->
+                    <section class="impact-section" id="impactSection" hidden>
+                <h2 class="section-title fade-in-up" style="--delay: 0ms">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>
+                    </svg>
+                    Fee Impact by Quantity
+                </h2>
+                <p class="section-subtitle fade-in-up" style="--delay: 50ms">Buying more shares reduces the fee percentage</p>
+
+                <div class="table-wrapper fade-in-up" style="--delay: 100ms">
                     <table class="impact-table">
                         <thead>
                             <tr>
-                                <th>Quantity</th>
+                                <th>Shares</th>
                                 <th>Trade Value</th>
-                                <th>Total Fees</th>
+                                <th>Fees</th>
                                 <th>Fee %</th>
                             </tr>
                         </thead>
-                        <tbody id="impactTableBody">
-                        </tbody>
+                        <tbody id="impactTableBody"></tbody>
                     </table>
                 </div>
 
-                <div class="verdict-box" id="verdictBox"></div>
-            </section>
+                <div class="verdict-card fade-in-up" id="verdictBox" style="--delay: 150ms"></div>
+                    </section>
 
-            <!-- Break-Even Section -->
-            <section class="break-even-section" id="breakEvenSection" hidden>
-                <h2 class="section-title">
-                    <span>📈</span> Break-Even Analysis
+            <!-- Break Even -->
+                    <section class="break-even-section" id="breakEvenSection" hidden>
+                <h2 class="section-title fade-in-up" style="--delay: 0ms">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+                    </svg>
+                    Break-Even Analysis
                 </h2>
-                <div class="break-even-card">
-                    <p class="break-even-main" id="breakEvenMain"></p>
-                    <p class="break-even-sub" id="breakEvenSub"></p>
+                <div class="be-card fade-in-up" style="--delay: 50ms">
+                    <p class="be-main" id="breakEvenMain"></p>
+                    <p class="be-sub" id="breakEvenSub"></p>
+                </div>
+                    </section>
+
+            <!-- Broker Compare -->
+                    <section class="broker-section" id="brokerSection" hidden>
+                <h2 class="section-title fade-in-up" style="--delay: 0ms">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                    </svg>
+                    Broker Comparison
+                </h2>
+                <div class="broker-scroll fade-in-up" style="--delay: 50ms">
+                    <div class="broker-list" id="brokerTableBody"></div>
+                </div>
+                    </section>
+
+            <!-- Education -->
+                    <section class="edu-section fade-in-up" id="learn" style="--delay: 200ms">
+                <h2 class="section-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    Understanding NSE Fees
+                </h2>
+
+                <div class="edu-grid">
+                    <details class="edu-card">
+                        <summary>
+                            <span class="edu-icon">💡</span>
+                            <div class="edu-header">
+                                <h3>Why are small trades expensive?</h3>
+                                <svg class="edu-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </div>
+                        </summary>
+                        <p>The <strong>KES 2 stamp duty</strong> applies per KES 10,000 bracket. On a KES 150 trade, that's <strong>1.33%</strong> just in stamp duty! On larger trades, the same KES 2 becomes negligible.</p>
+                    </details>
+
+                    <details class="edu-card">
+                        <summary>
+                            <span class="edu-icon">🎯</span>
+                            <div class="edu-header">
+                                <h3>What's the sweet spot?</h3>
+                                <svg class="edu-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </div>
+                        </summary>
+                        <p>The sweet spot is the maximum shares you can buy while staying within one KES 10,000 stamp duty bracket: <code>floor(10000 / price)</code>. For SCOM at KES 32.30, that's <strong>309 shares</strong>.</p>
+                    </details>
+
+                    <details class="edu-card">
+                        <summary>
+                            <span class="edu-icon">📱</span>
+                            <div class="edu-header">
+                                <h3>Ziidi's "1.5%" explained</h3>
+                                <svg class="edu-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </div>
+                        </summary>
+                        <p>Ziidi's "~1.5% all-in" refers to <strong>brokerage only</strong>. Statutory levies (NSE 0.12%, CMA 0.08%, CDSC 0.08%, ICF 0.01%) are charged on top, making the true total ~<strong>2.04%</strong>.</p>
+                    </details>
+                </div>
+                    </section>
                 </div>
             </section>
 
-            <!-- Broker Comparison -->
-            <section class="broker-section" id="brokerSection" hidden>
-                <h2 class="section-title">
-                    <span>🏦</span> Compare Brokers
-                </h2>
-                <div class="broker-table-wrapper">
-                    <table class="broker-table">
-                        <thead>
-                            <tr>
-                                <th>Broker</th>
-                                <th>Rate</th>
-                                <th>Total Fees</th>
-                                <th>Fee %</th>
-                            </tr>
-                        </thead>
-                        <tbody id="brokerTableBody">
-                        </tbody>
-                    </table>
+            <section class="insight-section" id="impact">
+                <div class="section-heading">
+                    <p class="eyebrow">Why it matters</p>
+                    <h2 class="section-title">The smallest trades pay the highest price.</h2>
+                    <p class="section-lead">NSE stamp duty is fixed per KES 10,000 bracket and charged on every trade. Flat fees are manageable on larger orders, but punitive on tiny positions.</p>
                 </div>
-                <p class="section-note">Rates are negotiable. Contact brokers directly for institutional rates.</p>
+                <div class="split-grid">
+                    <article class="split-card">
+                        <h3>What investors assume</h3>
+                        <ul>
+                            <li>"Brokerage is the whole cost."</li>
+                            <li>"Small trades are just smaller versions of big trades."</li>
+                            <li>"Fees scale evenly with trade size."</li>
+                        </ul>
+                    </article>
+                    <article class="split-card split-card--accent">
+                        <h3>What the market charges</h3>
+                        <ul>
+                            <li>Brokerage plus VAT, plus NSE, CMA, CDSC, and ICF levies</li>
+                            <li>Stamp duty is a fixed charge that hits tiny trades hardest</li>
+                            <li>Buy and sell both carry charges, so break-even rises fast</li>
+                        </ul>
+                    </article>
+                </div>
+                <p class="section-note">A 2% total buy fee and a 2% total sell fee means you need roughly a 4% price move just to break even. On very small trades, the fixed stamp duty can push that hurdle even higher.</p>
+                <blockquote class="section-quote">For low-value transactions, fixed stamp charges can outweigh what investors expect to pay from percentage fees alone.</blockquote>
             </section>
 
-            <!-- Education Section -->
-            <section class="education-section">
-                <h2 class="section-title">
-                    <span>ℹ️</span> How NSE Fees Work
-                </h2>
+            <section class="features-section" id="features">
+                <div class="section-heading">
+                    <p class="eyebrow">Features</p>
+                    <h2 class="section-title">Everything you need, nothing extra</h2>
+                    <p class="section-lead">Simple enough for first-time investors, detailed enough for seasoned traders.</p>
+                </div>
+                <div class="feature-grid">
+                    <article class="feature-card">
+                        <h3>Instant fee breakdown</h3>
+                        <p>Brokerage, VAT, NSE levy, CMA levy, CDSC, ICF, stamp duty — all visible.</p>
+                    </article>
+                    <article class="feature-card">
+                        <h3>Fee impact by quantity</h3>
+                        <p>See how fees drop as trade size grows and spot the sweet spot.</p>
+                    </article>
+                    <article class="feature-card">
+                        <h3>Break-even calculator</h3>
+                        <p>Exact iterative break-even pricing, not an approximation.</p>
+                    </article>
+                    <article class="feature-card">
+                        <h3>Broker comparison</h3>
+                        <p>Compare brokers side-by-side and pick the best rate for your trade.</p>
+                    </article>
+                    <article class="feature-card">
+                        <h3>Shareable results</h3>
+                        <p>Generate a clean share card or copy a link instantly.</p>
+                    </article>
+                    <article class="feature-card">
+                        <h3>Offline ready</h3>
+                        <p>Install as a PWA and calculate even when data is slow.</p>
+                    </article>
+                </div>
+            </section>
 
-                <details class="edu-details">
-                    <summary>Why are fees so high on small trades?</summary>
-                    <div class="edu-content">
-                        <p>The <strong>KES 2 stamp duty</strong> applies per every KES 10,000 (or part thereof). On a KES 150 trade, that's <strong>1.33%</strong> just in stamp duty! On larger trades, the same KES 2 becomes negligible (0.02% at KES 10,000).</p>
-                        <p>This is why buying 1-5 shares is so expensive — the flat stamp duty dominates your costs.</p>
-                    </div>
-                </details>
+            <section class="steps-section" id="how">
+                <div class="section-heading">
+                    <p class="eyebrow">How it works</p>
+                    <h2 class="section-title">Three steps to clarity</h2>
+                </div>
+                <div class="steps-grid">
+                    <article class="step-card">
+                        <span class="step-number">1</span>
+                        <h3>Pick your stock</h3>
+                        <p>Choose any NSE company with the latest closing price.</p>
+                    </article>
+                    <article class="step-card">
+                        <span class="step-number">2</span>
+                        <h3>Enter your trade</h3>
+                        <p>Select buy or sell, shares, and your broker.</p>
+                    </article>
+                    <article class="step-card">
+                        <span class="step-number">3</span>
+                        <h3>Get insights</h3>
+                        <p>See total cost, fee impact, and break-even instantly.</p>
+                    </article>
+                </div>
+            </section>
 
-                <details class="edu-details">
-                    <summary>What's the "sweet spot" quantity?</summary>
-                    <div class="edu-content">
-                        <p>The sweet spot is the maximum number of shares you can buy while staying within one KES 10,000 stamp duty bracket. This is calculated as <code>floor(10000 / price_per_share)</code>.</p>
-                        <p>For SCOM at KES 33.85, that's <strong>295 shares</strong> (KES 9,985.75 total). Buying 296 shares would trigger a second KES 2 stamp duty bracket.</p>
+            <section class="stats-section" id="stats">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <p class="stat-value">KES 2.1M+</p>
+                        <p class="stat-label">Fees calculated</p>
                     </div>
-                </details>
+                    <div class="stat-card">
+                        <p class="stat-value" id="statBrokerCount">5+</p>
+                        <p class="stat-label">NSE brokers</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-value" id="statStockCount">65+</p>
+                        <p class="stat-label">Listed stocks</p>
+                    </div>
+                </div>
+            </section>
 
-                <details class="edu-details">
-                    <summary>Why does Ziidi say "~1.5% all-in"?</summary>
-                    <div class="edu-content">
-                        <p>Ziidi's marketing refers to <strong>brokerage only</strong>. Statutory levies (NSE 0.12%, CMA 0.08%, CDSC 0.08%, ICF 0.01%) are charged on top, making the true total before stamp duty ~<strong>2.04%</strong>.</p>
-                        <p>Always use the "Safaricom Ziidi" broker option in this calculator — don't assume 1.12% applies to Ziidi trades.</p>
+            <section class="cta-section">
+                <div class="cta-card">
+                    <div>
+                        <p class="eyebrow">Ready to trade smarter?</p>
+                        <h2>Make every trade count.</h2>
+                        <p>Free forever. No sign-up. Built for Kenyan investors.</p>
                     </div>
-                </details>
-
-                <details class="edu-details">
-                    <summary>What's the difference between Omnibus and Individual CDS?</summary>
-                    <div class="edu-content">
-                        <p><strong>Omnibus CDS</strong> (Ziidi): The broker holds shares collectively. You can't pledge shares as collateral, and share transfer requires broker involvement.</p>
-                        <p><strong>Individual CDS</strong> (traditional brokers): You own shares directly. You can pledge them for loans and transfer freely.</p>
+                    <div class="cta-actions">
+                        <a class="btn btn-primary" href="#calculator">Open calculator</a>
+                        <a class="btn btn-ghost" href="#features">Explore features</a>
                     </div>
-                </details>
+                </div>
             </section>
         </main>
 
         <!-- Footer -->
         <footer class="footer">
-            <p class="footer-links">
-                <a href="https://ziidi.co.ke" target="_blank" rel="noopener">Open Ziidi</a>
-                <span>•</span>
+            <div class="footer-links">
+                <a href="#why-it-matters">Why it matters</a>
+                <span class="footer-dot">•</span>
+                <a href="#calculator">Calculator</a>
+                <span class="footer-dot">•</span>
+                <a href="#features">Features</a>
+                <span class="footer-dot">•</span>
+                <a href="https://ziidi.co.ke" target="_blank" rel="noopener">Ziidi</a>
+                <span class="footer-dot">•</span>
                 <a href="https://cdsc.co.ke" target="_blank" rel="noopener">DhowCSD</a>
-            </p>
-            <p class="footer-note">
-                Prices updated: <span id="priceUpdateDate"></span> •
-                Data source: NSE official
-            </p>
-            <p class="footer-disclaimer">
-                Not financial advice. Verify with your broker before trading.
-            </p>
+            </div>
+            <p class="footer-note">Prices: <span id="priceUpdateDate"></span> • Not financial advice</p>
         </footer>
     </div>
 
-    <!-- Hidden Share Card for html2canvas -->
+    <!-- Loading State -->
+    <div class="loading-overlay" id="loadingState">
+        <div class="spinner-ring">
+            <div class="ring"></div>
+            <div class="ring"></div>
+            <div class="ring"></div>
+        </div>
+        <p>Loading market data...</p>
+    </div>
+
+    <!-- Hidden Share Card -->
     <div class="share-card-hidden" id="shareCardHidden">
         <div class="share-card-inner">
             <div class="share-header">
@@ -339,12 +662,10 @@
                 Fees: <span id="shareFee"></span> <span id="shareEmoji"></span>
             </div>
             <div class="share-breakdown">
-                <span>Stamp Duty: <span id="shareStamp"></span></span>
+                <span>Stamp: <span id="shareStamp"></span></span>
                 <span>Break-even: <span id="shareBreakEven"></span></span>
             </div>
-            <div class="share-footer">
-                Check yours → nsecalc.co.ke
-            </div>
+            <div class="share-footer">nsecalc.co.ke</div>
         </div>
     </div>
 

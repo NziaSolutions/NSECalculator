@@ -1,0 +1,8 @@
+sequenceDiagram
+  participant U as User
+  participant FE as Frontend
+  participant API as API
+  U->>FE: Action
+  FE->>API: Request
+  API-->>FE: Response
+  FE-->>U: Render

@@ -1,0 +1,37 @@
+{
+  "fees": {
+    "brokerage": {
+      "defaultRate": 0.0112,
+      "minFee": 0,
+      "description": "Stockbroker commission"
+    },
+    "vatOnBrokerage": {
+      "rate": 0.16,
+      "description": "VAT charged on brokerage commission only"
+    },
+    "nseLevy": {
+      "rate": 0.0012,
+      "description": "NSE transaction levy"
+    },
+    "cmaLevy": {
+      "rate": 0.0008,
+      "description": "Capital Markets Authority levy"
+    },
+    "cdscFee": {
+      "rate": 0.0008,
+      "description": "Central Depository & Settlement Corporation fee (0.08% per cdsc.co.ke Oct 2025)"
+    },
+    "icfLevy": {
+      "rate": 0.0001,
+      "description": "Investor Compensation Fund levy"
+    },
+    "stampDuty": {
+      "ratePerBracket": 2,
+      "bracketSize": 10000,
+      "description": "KES 2 per every KES 10,000 or part thereof"
+    }
+  },
+  "statutoryTotal": 0.0029,
+  "lastUpdated": "2026-02-19",
+  "source": "CMA Gazette / NSE Fee Schedule"
+}

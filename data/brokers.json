@@ -1,0 +1,60 @@
+{
+  "brokers": [
+    {
+      "id": "ziidi",
+      "name": "Safaricom Ziidi (Kestrel Capital)",
+      "brokerageRate": 0.015,
+      "minFee": 0,
+      "platform": "Mobile App",
+      "cdsType": "Omnibus",
+      "notes": "Single-share trading. No minimum lot. No minimum fee. Brokerage is 1.50% (not 1.12%). Ziidi markets '~1.5% all-in' which refers to brokerage only — statutory levies are on top."
+    },
+    {
+      "id": "sib",
+      "name": "Standard Investment Bank (SIB)",
+      "brokerageRate": 0.01,
+      "minFee": 0,
+      "platform": "Mobile App / Web",
+      "cdsType": "Individual",
+      "notes": "Lower commission. Individual CDS account."
+    },
+    {
+      "id": "dyer",
+      "name": "Dyer & Blair",
+      "brokerageRate": 0.012,
+      "minFee": 0,
+      "platform": "Web / In-person",
+      "cdsType": "Individual",
+      "notes": "Established broker with full-service offering."
+    },
+    {
+      "id": "faida",
+      "name": "Faida Investment Bank",
+      "brokerageRate": 0.0125,
+      "minFee": 100,
+      "platform": "Web / In-person",
+      "cdsType": "Individual",
+      "notes": "Traditional broker with KES 100 minimum fee. Individual CDS account."
+    },
+    {
+      "id": "efg",
+      "name": "EFG Hermes Kenya",
+      "brokerageRate": 0.015,
+      "minFee": 0,
+      "platform": "Web / Mobile",
+      "cdsType": "Individual",
+      "notes": "International broker with Kenya presence."
+    },
+    {
+      "id": "custom",
+      "name": "Other / Custom",
+      "brokerageRate": 0.015,
+      "minFee": 0,
+      "platform": "Various",
+      "cdsType": "Various",
+      "notes": "Enter your broker specific rates manually."
+    }
+  ],
+  "defaultBroker": "ziidi",
+  "lastUpdated": "2026-02-19"
+}

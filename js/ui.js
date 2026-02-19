@@ -139,7 +139,10 @@ const els = {
 /**
  * Initialize the calculator
  */
-function init() {
+async function init() {
+    // Fetch fresh prices from data/stocks.json (overlays embedded fallback prices)
+    await data.loadPrices();
+
     populateStocks();
     populateBrokers();
     loadURLParams();

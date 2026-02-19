@@ -304,6 +304,32 @@ function getPriceDataDate() {
     return dates.sort().reverse()[0] || '2026-02-18';
 }
 
+/**
+ * Fetch latest prices from data/stocks.json and overlay them onto STOCKS.
+ * Falls back silently to embedded prices if the fetch fails (e.g. offline).
+ * @returns {Promise<void>}
+ */
+async function loadPrices() {
+    try {
+        const res = await fetch('data/stocks.json');
+        if (!res.ok) return;
+        const json = await res.json();
+        const map = {};
+        for (const s of json.stocks ?? []) {
+            if (s.ticker) map[s.ticker] = s;
+        }
+        for (const stock of STOCKS) {
+            const fresh = map[stock.ticker];
+            if (fresh?.price != null) {
+                stock.price     = fresh.price;
+                stock.priceDate = fresh.priceDate ?? stock.priceDate;
+            }
+        }
+    } catch {
+        // Offline or fetch failed — continue with embedded prices
+    }
+}
+
 // ============================================
 // Export
 // ============================================
@@ -328,7 +354,8 @@ export {
 
     // Config functions
     getFeeConfig,
-    getPriceDataDate
+    getPriceDataDate,
+    loadPrices
 };
 
 // Type definitions for JSDoc

@@ -99,6 +99,19 @@ const els = {
     // Theme
     themeToggle: document.getElementById('themeToggle'),
 
+    // Hero proof cards
+    heroStockSelect: document.getElementById('heroStockSelect'),
+    proofCardSmall: document.getElementById('proofCardSmall'),
+    proofCardSweet: document.getElementById('proofCardSweet'),
+    proofTickerSmall: document.getElementById('proofTickerSmall'),
+    proofTradeSmall: document.getElementById('proofTradeSmall'),
+    proofAmountSmall: document.getElementById('proofAmountSmall'),
+    proofPercentSmall: document.getElementById('proofPercentSmall'),
+    proofTickerSweet: document.getElementById('proofTickerSweet'),
+    proofTradeSweet: document.getElementById('proofTradeSweet'),
+    proofAmountSweet: document.getElementById('proofAmountSweet'),
+    proofSavedAmount: document.getElementById('proofSavedAmount'),
+
     // Hints
     brokerHint: document.getElementById('brokerHint'),
     priceDateBadge: document.getElementById('priceDateBadge'),
@@ -191,6 +204,7 @@ function finishInit() {
 
     populateStocks();
     populateBrokers();
+    initHeroProofCards();
     loadURLParams();
     attachEventListeners();
     updatePriceDateBadge();
@@ -271,6 +285,100 @@ function populateBrokers() {
 
     els.brokerSelect.value = data.DEFAULT_BROKER_ID;
     updateBrokerHint();
+}
+
+/**
+ * Initialize hero proof cards with stock selector
+ */
+function initHeroProofCards() {
+    if (!els.heroStockSelect) return;
+
+    const stocks = data.getAllStocks();
+    
+    // Populate select
+    els.heroStockSelect.innerHTML = '';
+    stocks.forEach(stock => {
+        const option = document.createElement('option');
+        option.value = stock.ticker;
+        option.textContent = `${stock.ticker} — ${stock.name}`;
+        els.heroStockSelect.appendChild(option);
+    });
+
+    // Set default (first stock or ABSA if available)
+    const defaultStock = stocks.find(s => s.ticker === 'ABSA') || stocks[0];
+    if (defaultStock) {
+        els.heroStockSelect.value = defaultStock.ticker;
+        updateHeroProofCards(defaultStock.ticker);
+    }
+
+    // Listen for changes
+    els.heroStockSelect.addEventListener('change', (e) => {
+        updateHeroProofCards(e.target.value);
+    });
+}
+
+/**
+ * Update hero proof cards with calculations for selected stock
+ */
+function updateHeroProofCards(ticker) {
+    const stock = data.getStock(ticker);
+    if (!stock) return;
+
+    // Default broker for hero section (Ziidi)
+    const defaultBroker = data.getBroker('ziidi') || data.getBroker(data.DEFAULT_BROKER_ID);
+    const brokerageRate = defaultBroker?.brokerageRate || 0.015;
+    const minBrokerageFee = defaultBroker?.minFee || 0;
+
+    // Calculate 1 share
+    const smallQty = 1;
+    const smallBuy = calc.calculateBuy({
+        pricePerShare: stock.price,
+        quantity: smallQty,
+        brokerageRate,
+        minBrokerageFee
+    });
+
+    // Calculate sweet spot
+    const sweetSpot = calc.calculateSweetSpot(stock.price);
+    const sweetBuy = calc.calculateBuy({
+        pricePerShare: stock.price,
+        quantity: sweetSpot,
+        brokerageRate,
+        minBrokerageFee
+    });
+
+    // Calculate savings
+    const smallFeeAmount = smallBuy.totalFees;
+    const sweetFeeAmount = sweetBuy.totalFees;
+    const savings = smallFeeAmount - sweetFeeAmount;
+
+    // Fade out, update, fade in
+    const updateCards = () => {
+        // Update small trade card
+        if (els.proofTickerSmall) els.proofTickerSmall.textContent = ticker;
+        if (els.proofTradeSmall) els.proofTradeSmall.textContent = `Buy 1 share @ KES ${stock.price.toFixed(2)}`;
+        if (els.proofAmountSmall) els.proofAmountSmall.textContent = `KES ${smallBuy.totalAmount.toFixed(2)}`;
+        if (els.proofPercentSmall) els.proofPercentSmall.textContent = `${smallBuy.feePercentage.toFixed(2)}%`;
+
+        // Update sweet spot card
+        if (els.proofTickerSweet) els.proofTickerSweet.textContent = ticker;
+        if (els.proofTradeSweet) els.proofTradeSweet.textContent = `Buy ${sweetSpot} shares @ KES ${stock.price.toFixed(2)}`;
+        if (els.proofAmountSweet) els.proofAmountSweet.textContent = `${sweetBuy.feePercentage.toFixed(2)}%`;
+        if (els.proofSavedAmount) els.proofSavedAmount.textContent = `KES ${Math.abs(savings).toFixed(2)}`;
+
+        // Update colors based on fee percentage
+        const smallStatus = calc.getFeeStatus(smallBuy.feePercentage);
+        const sweetStatus = calc.getFeeStatus(sweetBuy.feePercentage);
+
+        if (els.proofCardSmall) {
+            els.proofCardSmall.className = `proof-card proof-card--${smallStatus.class === 'low' ? 'success' : 'warning'}`;
+        }
+        if (els.proofCardSweet) {
+            els.proofCardSweet.className = `proof-card proof-card--${sweetStatus.class === 'low' ? 'success' : 'warning'}`;
+        }
+    };
+
+    updateCards();
 }
 
 /**

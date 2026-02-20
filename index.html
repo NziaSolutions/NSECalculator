@@ -38,6 +38,12 @@
                 </button>
                 <a class="btn btn-small btn-primary" href="#calculator">Open calculator</a>
             </div>
+            <!-- Mobile-only nav links — second row, only visible when .nav-links is hidden -->
+            <div class="nav-mobile-strip">
+                <a href="#why-it-matters">Why it matters</a>
+                <a href="#calculator">Calculator</a>
+                <a href="#learn">Learn</a>
+            </div>
         </header>
 
         <!-- Main Content -->
@@ -45,64 +51,73 @@
             <!-- Hero -->
             <section class="hero">
                 <div class="hero-content">
-                    <div class="hero-badge">
-                        <span class="hero-badge-icon">📊</span>
-                        <span class="hero-badge-text">Built for Kenyan retail investors</span>
-                    </div>
-                    <h1 class="hero-title">
-                        <span class="hero-title-line">Small trades are</span>
-                        <span class="hero-title-line hero-title-line--accent">losing you 8%+ in fees.</span>
-                    </h1>
-                    <p class="hero-lead">Stamp duty, broker charges, and statutory levies eat returns on small NSE trades. Calculate exactly what you'll pay — and find the sweet spot — before you trade.</p>
-                    <div class="hero-actions">
-                        <a class="btn btn-primary" href="#calculator">
-                            Calculate my fees
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                <path d="M5 12h14M12 5l7 7-7 7"/>
-                            </svg>
-                        </a>
-                        <a class="btn btn-ghost" href="#why-it-matters">Why fees matter</a>
+                    <div class="hero-text">
+                        <div class="hero-badge">
+                            <span class="hero-badge-icon">📊</span>
+                            <span class="hero-badge-text">Built for Kenyan retail investors</span>
+                        </div>
+                        <h1 class="hero-title">
+                            <span class="hero-title-line">Small trades are</span>
+                            <span class="hero-title-line hero-title-line--accent">losing you 8%+ in fees.</span>
+                        </h1>
+                        <p class="hero-lead">Stamp duty, broker charges, and statutory levies eat returns on small NSE trades. Calculate exactly what you'll pay — and find the sweet spot — before you trade.</p>
+                        <div class="hero-actions">
+                            <a class="btn btn-primary" href="#calculator">
+                                Calculate my fees
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                            <a class="btn btn-ghost" href="#why-it-matters">Why fees matter</a>
+                        </div>
                     </div>
 
                     <!-- Proof by Example -->
-                    <div class="hero-proof">
-                        <div class="proof-header">
-                            <span class="proof-label">Example from today's market</span>
+                    <div class="hero-proof-container">
+                        <div class="hero-proof">
+                            <div class="proof-header">
+                                <label class="proof-label-wrapper">
+                                    <span class="proof-label">Live example:</span>
+                                    <select id="heroStockSelect" class="proof-stock-select" aria-label="Choose stock for example">
+                                        <option value="">Loading stocks...</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <div class="proof-cards">
+                                <div class="proof-card proof-card--warning" id="proofCardSmall">
+                                    <div class="proof-ticker" id="proofTickerSmall">ABSA</div>
+                                    <div class="proof-trade" id="proofTradeSmall">Buy 1 share @ KES 0.00</div>
+                                    <div class="proof-divider"></div>
+                                    <div class="proof-fees">
+                                        <span class="proof-fees-label">You pay</span>
+                                        <span class="proof-fees-amount" id="proofAmountSmall">KES 0.00</span>
+                                    </div>
+                                    <div class="proof-percent">
+                                        <span class="proof-percent-value" id="proofPercentSmall">0.00%</span>
+                                        <span class="proof-percent-label">in fees</span>
+                                    </div>
+                                </div>
+                                <div class="proof-arrow">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 18l6-6-6-6"/>
+                                    </svg>
+                                </div>
+                                <div class="proof-card proof-card--success" id="proofCardSweet">
+                                    <div class="proof-ticker" id="proofTickerSweet">ABSA</div>
+                                    <div class="proof-trade" id="proofTradeSweet">Buy 332 shares @ KES 0.00</div>
+                                    <div class="proof-divider"></div>
+                                    <div class="proof-fees">
+                                        <span class="proof-fees-label">Fee drops to</span>
+                                        <span class="proof-fees-amount" id="proofAmountSweet">1.61%</span>
+                                    </div>
+                                    <div class="proof-saved">
+                                        <span class="proof-saved-label">You save</span>
+                                        <span class="proof-saved-value" id="proofSavedAmount">KES 0.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="proof-footnote">Stamp duty is KES 2 per KES 10,000 bracket. The same KES 2 becomes negligible on larger trades.</p>
                         </div>
-                        <div class="proof-cards">
-                            <div class="proof-card proof-card--warning">
-                                <div class="proof-ticker">ABSA</div>
-                                <div class="proof-trade">Buy 1 share @ KES 30.20</div>
-                                <div class="proof-divider"></div>
-                                <div class="proof-fees">
-                                    <span class="proof-fees-label">You pay</span>
-                                    <span class="proof-fees-amount">KES 32.67</span>
-                                </div>
-                                <div class="proof-percent">
-                                    <span class="proof-percent-value">8.18%</span>
-                                    <span class="proof-percent-label">in fees</span>
-                                </div>
-                            </div>
-                            <div class="proof-arrow">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M9 18l6-6-6-6"/>
-                                </svg>
-                            </div>
-                            <div class="proof-card proof-card--success">
-                                <div class="proof-ticker">ABSA</div>
-                                <div class="proof-trade">Buy 332 shares @ KES 30.20</div>
-                                <div class="proof-divider"></div>
-                                <div class="proof-fees">
-                                    <span class="proof-fees-label">Fee drops to</span>
-                                    <span class="proof-fees-amount">1.61%</span>
-                                </div>
-                                <div class="proof-saved">
-                                    <span class="proof-saved-label">You save</span>
-                                    <span class="proof-saved-value">KES 102.47</span>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="proof-footnote">Stamp duty is KES 2 per KES 10,000 bracket. The same KES 2 becomes negligible on larger trades.</p>
                     </div>
                 </div>
             </section>

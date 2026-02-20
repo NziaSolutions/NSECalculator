@@ -130,6 +130,8 @@ body {
     background: color-mix(in srgb, var(--bg) 90%, transparent);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
+    margin-left: calc(var(--space-lg) * -1);
+    margin-right: calc(var(--space-lg) * -1);
 }
 
 .nav-inner {
@@ -2158,6 +2160,16 @@ body {
 
     .nav-mobile-strip {
         display: flex;
+        padding: 0.4rem var(--space-md) 0.5rem;
+    }
+
+    .nav-inner {
+        padding: 0.75rem var(--space-md);
+    }
+
+    .top-nav {
+        margin-left: calc(var(--space-md) * -1);
+        margin-right: calc(var(--space-md) * -1);
     }
 
     .page-wrapper {
@@ -2179,14 +2191,46 @@ body {
         padding: 0.75rem var(--space-sm);
     }
 
+    .nav-mobile-strip {
+        padding: 0.4rem var(--space-sm) 0.5rem;
+        flex-wrap: wrap;
+        gap: var(--space-md);
+    }
+
+    .top-nav {
+        margin-left: calc(var(--space-sm) * -1);
+        margin-right: calc(var(--space-sm) * -1);
+    }
+
+    .top-nav .btn.btn-small {
+        display: none;
+    }
+
     .hero-actions,
     .cta-actions {
         flex-direction: column;
         align-items: stretch;
     }
 
+    .input-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .custom-grid {
+        grid-template-columns: 1fr;
+    }
+
     .proof-cards {
         flex-direction: column;
+    }
+
+    .proof-label-wrapper {
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+
+    .proof-stock-select {
+        width: 100%;
     }
 
     .proof-arrow {

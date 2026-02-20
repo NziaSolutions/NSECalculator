@@ -10,6 +10,7 @@
 import * as calc from './calculator.js';
 import * as data from './data.js';
 import { shareResult } from './share.js';
+import { trackCalculation, trackStockSelected, trackBrokerComparison, trackShareAttempt, trackBreakEvenView, trackThemeToggle } from './analytics.js';
 
 // ============================================
 // Utility Functions
@@ -458,6 +459,7 @@ function attachEventListeners() {
             els.priceInput.value = stock.price;
             state.pricePerShare = stock.price;
             updatePriceDateBadge();
+            trackStockSelected(stock.ticker);
             calculate();
         }
     });
@@ -473,6 +475,8 @@ function attachEventListeners() {
             els.customBrokerGroup.hidden = true;
         }
 
+        const brokerName = state.brokerId === 'custom' ? 'custom' : (data.getBroker(state.brokerId)?.name || state.brokerId);
+        trackBrokerComparison(brokerName);
         calculate();
     });
 
@@ -669,6 +673,10 @@ function calculate() {
     renderBreakEven();
     renderBrokerComparison();
 
+    // Track the calculation
+    const brokerName = state.brokerId === 'custom' ? 'custom' : (data.getBroker(state.brokerId)?.name || state.brokerId);
+    trackCalculation(state.ticker, state.quantity, brokerName, state.direction, result.feePercentage);
+
     updateURL();
 }
 
@@ -864,6 +872,7 @@ function renderBreakEven() {
     els.breakEvenSub.textContent = `The stock needs to rise ${breakEven.breakEvenPct.toFixed(2)}% before you make any profit.`;
 
     els.breakEvenSection.hidden = false;
+    trackBreakEvenView();
 }
 
 /**
@@ -924,6 +933,8 @@ async function handleShare() {
     const breakEven = calc.calculateBreakEven(stock.price, state.quantity, brokerageRate, minBrokerageFee);
     const feeStatus = calc.getFeeStatus(result.feePercentage);
 
+    trackShareAttempt('web_share');
+
     await shareResult({
         ticker: stock.ticker,
         stockName: stock.name,
@@ -966,6 +977,7 @@ function initThemeToggle() {
         const next = THEME_CYCLE[nextIndex];
         applyTheme(next);
         localStorage.setItem(THEME_KEY, next);
+        trackThemeToggle(next);
     });
 }
 
@@ -1033,6 +1045,15 @@ function registerServiceWorker() {
         navigator.serviceWorker.register('/sw.js')
             .then(reg => console.log('Service worker registered:', reg))
             .catch(err => console.log('Service worker registration failed:', err));
+    }
+
+    // Track PWA installation
+    if ('onappinstalled' in window) {
+        window.addEventListener('appinstalled', () => {
+            import('./analytics.js').then(({ trackPWAInstalled }) => {
+                trackPWAInstalled();
+            });
+        });
     }
 }
 

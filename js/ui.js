@@ -18,9 +18,10 @@ import { shareResult } from './share.js';
 /**
  * Create a table cell with text content
  */
-function createCell(text) {
+function createCell(text, label) {
     const cell = document.createElement('td');
     cell.textContent = text;
+    if (label) cell.setAttribute('data-label', label);
     return cell;
 }
 
@@ -95,6 +96,9 @@ const els = {
     customRate: document.getElementById('customRate'),
     customMinFee: document.getElementById('customMinFee'),
 
+    // Theme
+    themeToggle: document.getElementById('themeToggle'),
+
     // Hints
     brokerHint: document.getElementById('brokerHint'),
     priceDateBadge: document.getElementById('priceDateBadge'),
@@ -114,6 +118,7 @@ const els = {
     resultsSummary: document.getElementById('resultsSummary'),
 
     // Breakdown
+    breakdownDetails: document.querySelector('.breakdown-details'),
     bdSharesValue: document.getElementById('bdSharesValue'),
     bdBrokerage: document.getElementById('bdBrokerage'),
     bdBrokerageRate: document.getElementById('bdBrokerageRate'),
@@ -147,7 +152,13 @@ const els = {
     
     // Stats
     statBrokerCount: document.getElementById('statBrokerCount'),
-    statStockCount: document.getElementById('statStockCount')
+    statStockCount: document.getElementById('statStockCount'),
+
+    // Sticky result bar
+    stickyResult: document.getElementById('stickyResult'),
+    stickyLabel: document.getElementById('stickyLabel'),
+    stickyAmount: document.getElementById('stickyAmount'),
+    stickyFee: document.getElementById('stickyFee')
 };
 
 // ============================================
@@ -155,8 +166,28 @@ const els = {
 // ============================================
 
 async function init() {
-    // Fetch fresh prices from data/stocks.json
-    await data.loadPrices();
+    // Set a timeout to force-hide loading state if data fetch stalls
+    const loadingTimeout = setTimeout(() => {
+        console.warn('Data loading timed out — using embedded prices');
+        finishInit();
+    }, 3000);
+
+    try {
+        // Fetch fresh prices from data/stocks.json
+        await data.loadPrices();
+    } catch (e) {
+        console.warn('Failed to load fresh prices:', e);
+    }
+
+    clearTimeout(loadingTimeout);
+    finishInit();
+}
+
+/** Complete initialization after data is loaded (or timed out) */
+function finishInit() {
+    // Guard against double execution from both timeout and normal flow
+    if (finishInit._done) return;
+    finishInit._done = true;
 
     populateStocks();
     populateBrokers();
@@ -164,6 +195,8 @@ async function init() {
     attachEventListeners();
     updatePriceDateBadge();
     updateBrokerCount();
+    initStickyResultObserver();
+    initThemeToggle();
 
     // Hide loading
     els.loadingState.hidden = true;
@@ -411,7 +444,7 @@ function updateBrokerHint() {
     const broker = data.getBroker(state.brokerId);
     if (broker && els.brokerHint) {
         const ratePct = (broker.brokerageRate * 100).toFixed(2);
-        const minFeeText = broker.minFee > 0 ? `, min KES ${broker.minFee}` : '';
+        const minFeeText = broker.minFee > 0 ? `, min KES ${broker.minFee}` : ', no minimum fee';
         els.brokerHint.textContent = `Rate: ${ratePct}%${minFeeText}`;
     }
 }
@@ -575,6 +608,17 @@ function renderResults(result) {
     els.bdTotalFees.textContent = calc.formatKES(result.totalFees);
     els.bdTotalLabel.textContent = `TOTAL YOU ${state.direction === 'buy' ? 'PAY' : 'RECEIVE'}`;
     els.bdGrandTotal.textContent = calc.formatKES(result.totalAmount);
+
+    // Auto-open breakdown on desktop, or on mobile when fees are high
+    if (els.breakdownDetails) {
+        const isDesktop = window.matchMedia('(min-width: 641px)').matches;
+        if (isDesktop || result.feePercentage > 3) {
+            els.breakdownDetails.open = true;
+        }
+    }
+
+    // Update sticky result bar
+    updateStickyBar(result);
 }
 
 /**
@@ -604,11 +648,11 @@ function renderImpactTable() {
         const row = document.createElement('tr');
         const status = calc.getFeeStatus(impact.feePercentage);
 
-        row.appendChild(createCell(impact.quantity.toString()));
-        row.appendChild(createCell(calc.formatKES(impact.tradeValue)));
-        row.appendChild(createCell(calc.formatKES(impact.totalFees)));
+        row.appendChild(createCell(impact.quantity.toString(), 'Shares'));
+        row.appendChild(createCell(calc.formatKES(impact.tradeValue), 'Trade Value'));
+        row.appendChild(createCell(calc.formatKES(impact.totalFees), 'Fees'));
 
-        const feeCell = createCell(`${status.emoji} ${impact.feePercentage.toFixed(2)}%`);
+        const feeCell = createCell(`${status.emoji} ${impact.feePercentage.toFixed(2)}%`, 'Fee %');
         row.appendChild(feeCell);
 
         els.impactTableBody.appendChild(row);
@@ -622,7 +666,11 @@ function renderImpactTable() {
         quantity: state.quantity,
         brokerageRate,
         minBrokerageFee
-    }).feePercentage, sweetSpot);
+    }).feePercentage, sweetSpot, {
+        pricePerShare: stock.price,
+        brokerageRate,
+        minBrokerageFee
+    });
 
     els.verdictBox.innerHTML = '';
     els.verdictBox.className = `verdict-card verdict-card--${verdict.class}`;
@@ -642,6 +690,20 @@ function renderImpactTable() {
     els.verdictBox.appendChild(verdictKicker);
     els.verdictBox.appendChild(verdictTitle);
     els.verdictBox.appendChild(verdictP);
+
+    // Add intermediate step button if available
+    if (verdict.intermediate) {
+        const stepBtn = document.createElement('button');
+        stepBtn.type = 'button';
+        stepBtn.className = 'verdict-action verdict-action--step';
+        stepBtn.textContent = `Try ${verdict.intermediate.stepQty} shares (${verdict.intermediate.stepFee.toFixed(2)}% fees)`;
+        stepBtn.addEventListener('click', () => {
+            state.quantity = verdict.intermediate.stepQty;
+            els.quantityInput.value = verdict.intermediate.stepQty;
+            calculate();
+        });
+        els.verdictBox.appendChild(stepBtn);
+    }
 
     if (verdict.sharesToSweetSpot > 0 && verdict.actionLabel) {
         const quickAction = document.createElement('button');
@@ -755,6 +817,90 @@ async function handleShare() {
         breakEvenPct: breakEven.breakEvenPct,
         feeEmoji: feeStatus.emoji
     });
+}
+
+// ============================================
+// Theme Toggle
+// ============================================
+
+const THEME_KEY = 'nse-theme';
+const THEME_CYCLE = ['auto', 'light', 'dark'];
+const THEME_META = { auto: null, light: '#f5f7fb', dark: '#0f141d' };
+const THEME_ICONS = { auto: '◑', light: '☀️', dark: '🌙' };
+const THEME_LABELS = { auto: 'System', light: 'Light', dark: 'Dark' };
+
+/**
+ * Initialize theme toggle button
+ */
+function initThemeToggle() {
+    if (!els.themeToggle) return;
+
+    const saved = localStorage.getItem(THEME_KEY) || 'auto';
+    applyTheme(saved);
+
+    els.themeToggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme') || 'auto';
+        const nextIndex = (THEME_CYCLE.indexOf(current) + 1) % THEME_CYCLE.length;
+        const next = THEME_CYCLE[nextIndex];
+        applyTheme(next);
+        localStorage.setItem(THEME_KEY, next);
+    });
+}
+
+/**
+ * Apply theme to document and update toggle button
+ */
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+
+    // Update toggle icon + label
+    if (els.themeToggle) {
+        const icon = els.themeToggle.querySelector('.theme-toggle-icon');
+        if (icon) icon.textContent = THEME_ICONS[theme];
+        els.themeToggle.setAttribute('aria-label', `Theme: ${THEME_LABELS[theme]}. Click to change.`);
+    }
+
+    // Update meta theme-color
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+        if (theme === 'auto') {
+            // Reset to default — browser picks based on prefers-color-scheme
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            meta.setAttribute('content', isDark ? '#0f141d' : '#f5f7fb');
+        } else {
+            meta.setAttribute('content', THEME_META[theme]);
+        }
+    }
+}
+
+/**
+ * Initialize IntersectionObserver for sticky result bar
+ */
+function initStickyResultObserver() {
+    if (!els.stickyResult || !els.resultsCard) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+            if (entry.isIntersecting) {
+                els.stickyResult.classList.remove('visible');
+            } else if (!els.resultsCard.hidden) {
+                els.stickyResult.classList.add('visible');
+            }
+        }
+    }, { threshold: 0, rootMargin: '-60px 0px 0px 0px' });
+
+    observer.observe(els.resultsCard);
+}
+
+/**
+ * Update the sticky result bar values
+ */
+function updateStickyBar(result) {
+    if (!els.stickyResult) return;
+    els.stickyLabel.textContent = result.amountLabel;
+    els.stickyAmount.textContent = calc.formatKES(result.totalAmount);
+    const status = calc.getFeeStatus(result.feePercentage);
+    els.stickyFee.textContent = `${status.emoji} ${result.feePercentage.toFixed(2)}%`;
 }
 
 /**

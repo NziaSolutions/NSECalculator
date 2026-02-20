@@ -40,8 +40,29 @@
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Dark theme variables — applied by explicit toggle or system preference */
+[data-theme="dark"] {
+    --bg: #0f141d;
+    --surface: #151b26;
+    --surface-alt: #111826;
+    --text: #eef2f7;
+    --text-secondary: #c3cfdf;
+    --text-muted: #8fa1ba;
+    --border: #253247;
+    --accent: #6aa9ff;
+    --accent-strong: #93c0ff;
+    --accent-soft: rgba(106, 169, 255, 0.15);
+
+    /* Brighter fee colors for dark backgrounds (WCAG AA contrast) */
+    --fee-low: #34d399;
+    --fee-moderate: #fbbf24;
+    --fee-high: #fb923c;
+    --fee-very-high: #f87171;
+}
+
+/* When theme is "auto" (or unset), follow system preference */
 @media (prefers-color-scheme: dark) {
-    :root {
+    [data-theme="auto"] {
         --bg: #0f141d;
         --surface: #151b26;
         --surface-alt: #111826;
@@ -52,6 +73,11 @@
         --accent: #6aa9ff;
         --accent-strong: #93c0ff;
         --accent-soft: rgba(106, 169, 255, 0.15);
+
+        --fee-low: #34d399;
+        --fee-moderate: #fbbf24;
+        --fee-high: #fb923c;
+        --fee-very-high: #f87171;
     }
 }
 
@@ -148,6 +174,29 @@ body {
 .brand-tagline {
     font-size: 0.8rem;
     color: var(--text-muted);
+}
+
+.theme-toggle {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+    background: var(--surface-alt);
+    border-color: var(--accent);
+}
+
+.theme-toggle-icon {
+    font-size: 1.15rem;
+    line-height: 1;
 }
 
 .nav-links {
@@ -823,10 +872,10 @@ body {
     font-weight: 600;
 }
 
-.fee-badge.fee-low { background: rgba(16, 185, 129, 0.15); }
-.fee-badge.fee-moderate { background: rgba(245, 158, 11, 0.15); }
-.fee-badge.fee-high { background: rgba(249, 115, 22, 0.15); }
-.fee-badge.fee-very-high { background: rgba(239, 68, 68, 0.15); }
+.fee-badge.fee-low { background: rgba(16, 185, 129, 0.15); color: var(--fee-low); }
+.fee-badge.fee-moderate { background: rgba(245, 158, 11, 0.15); color: var(--fee-moderate); }
+.fee-badge.fee-high { background: rgba(249, 115, 22, 0.15); color: var(--fee-high); }
+.fee-badge.fee-very-high { background: rgba(239, 68, 68, 0.15); color: var(--fee-very-high); }
 
 .fee-emoji { font-size: 1rem; }
 
@@ -1042,6 +1091,12 @@ body {
     background: var(--accent-strong);
 }
 
+.share-btn .share-hint {
+    font-size: 0.75rem;
+    font-weight: 400;
+    opacity: 0.75;
+}
+
 /* ============================================
    Section Titles
    ============================================ */
@@ -1167,6 +1222,17 @@ body {
     background: var(--accent-soft);
     border-color: var(--accent);
     color: var(--accent-strong);
+}
+
+.verdict-action--step {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent-strong);
+}
+
+.verdict-action--step:hover {
+    background: var(--accent);
+    color: #fff;
 }
 
 .verdict-card--optimal,
@@ -1386,6 +1452,74 @@ body {
 
 .footer-note {
     opacity: 0.7;
+}
+
+.footer-sources {
+    opacity: 0.5;
+    font-size: 0.75rem;
+    margin-top: var(--space-xs);
+}
+
+.footer-sources a {
+    color: var(--text-secondary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/* ============================================
+   Sticky Result Bar
+   ============================================ */
+
+.sticky-result {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    transform: translateY(-100%);
+    transition: transform 0.3s var(--ease-out);
+}
+
+.sticky-result.visible {
+    transform: translateY(0);
+}
+
+.sticky-result[hidden] {
+    display: flex !important;
+    transform: translateY(-100%);
+}
+
+.sticky-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+}
+
+.sticky-amount {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.sticky-fee {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--accent-soft);
+    color: var(--accent-strong);
 }
 
 /* ============================================
@@ -1947,6 +2081,45 @@ body {
 
     .broker-name {
         min-height: 0;
+    }
+
+    /* Impact table → card layout on narrow mobile */
+    .impact-table thead {
+        display: none;
+    }
+
+    .impact-table,
+    .impact-table tbody,
+    .impact-table tr,
+    .impact-table td {
+        display: block;
+    }
+
+    .impact-table tr {
+        padding: var(--space-md) var(--space-lg);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .impact-table tr:last-child {
+        border-bottom: none;
+    }
+
+    .impact-table td {
+        padding: 2px var(--space-lg);
+        border-bottom: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.875rem;
+    }
+
+    .impact-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
     }
 }
 

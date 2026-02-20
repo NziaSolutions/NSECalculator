@@ -388,15 +388,73 @@ function isStampDutySignificant(stampDuty, consideration) {
 }
 
 /**
+ * Calculate intermediate optimization steps between current quantity and sweet spot.
+ * Returns a practical step-up quantity that meaningfully reduces fees without
+ * jumping all the way to the sweet spot.
+ *
+ * @param {number} pricePerShare - Price per share in KES
+ * @param {number} currentQty - Current number of shares
+ * @param {number} sweetSpot - Sweet spot quantity
+ * @param {number} brokerageRate - Brokerage rate as decimal
+ * @param {number} minBrokerageFee - Minimum brokerage fee in KES
+ * @returns {{ stepQty: number, stepFee: number }|null} Intermediate step or null
+ */
+function getIntermediateStep(pricePerShare, currentQty, sweetSpot, brokerageRate, minBrokerageFee) {
+    if (currentQty >= sweetSpot || sweetSpot <= 0) return null;
+
+    // Try reasonable intermediate quantities: 2x, 5x, 10x current, or 25%/50% of sweet spot
+    const candidates = [
+        currentQty * 2,
+        currentQty * 5,
+        currentQty * 10,
+        Math.round(sweetSpot * 0.25),
+        Math.round(sweetSpot * 0.5)
+    ].filter(q => q > currentQty && q < sweetSpot);
+
+    // Deduplicate and sort
+    const unique = [...new Set(candidates)].sort((a, b) => a - b);
+    if (unique.length === 0) return null;
+
+    // Pick the smallest candidate that drops fee by at least 0.3 percentage points
+    const currentResult = calculateBuy({ pricePerShare, quantity: currentQty, brokerageRate, minBrokerageFee });
+
+    for (const qty of unique) {
+        const result = calculateBuy({ pricePerShare, quantity: qty, brokerageRate, minBrokerageFee });
+        if (currentResult.feePercentage - result.feePercentage >= 0.3) {
+            return { stepQty: qty, stepFee: result.feePercentage };
+        }
+    }
+
+    return null;
+}
+
+/**
  * Get the fee verdict for a quantity range
  *
  * @param {number} quantity - Number of shares
  * @param {number} feePercentage - Fee percentage
  * @param {number} sweetSpot - Sweet spot quantity
+ * @param {Object} [opts] - Optional params for intermediate step calculation
+ * @param {number} [opts.pricePerShare] - Price per share
+ * @param {number} [opts.brokerageRate] - Brokerage rate
+ * @param {number} [opts.minBrokerageFee] - Min brokerage fee
  * @returns {Verdict} Verdict object with emoji and message
  */
-function getVerdict(quantity, feePercentage, sweetSpot) {
+function getVerdict(quantity, feePercentage, sweetSpot, opts) {
     const sharesToSweetSpot = Math.max(0, sweetSpot - quantity);
+
+    // Calculate intermediate step if params provided
+    let intermediate = null;
+    if (opts?.pricePerShare && quantity < sweetSpot) {
+        intermediate = getIntermediateStep(
+            opts.pricePerShare, quantity, sweetSpot,
+            opts.brokerageRate ?? 0.015, opts.minBrokerageFee ?? 0
+        );
+    }
+
+    const intermediateHint = intermediate
+        ? ` Try ${intermediate.stepQty} shares first (${intermediate.stepFee.toFixed(2)}% fees).`
+        : '';
 
     if (quantity >= sweetSpot) {
         return {
@@ -406,6 +464,7 @@ function getVerdict(quantity, feePercentage, sweetSpot) {
             class: 'optimal',
             sweetSpot,
             sharesToSweetSpot,
+            intermediate,
             actionLabel: ''
         };
     }
@@ -413,10 +472,11 @@ function getVerdict(quantity, feePercentage, sweetSpot) {
         return {
             emoji: '🔴',
             title: 'Too expensive right now',
-            message: `Fees are ${feePercentage.toFixed(2)}% on this trade. Sweet spot is ${sweetSpot} shares — add ${sharesToSweetSpot} more shares to reduce fixed-fee drag.`,
+            message: `Fees are ${feePercentage.toFixed(2)}% on this trade. Sweet spot is ${sweetSpot} shares.${intermediateHint}`,
             class: 'avoid',
             sweetSpot,
             sharesToSweetSpot,
+            intermediate,
             actionLabel: `Use sweet spot (${sweetSpot} shares)`
         };
     }
@@ -424,10 +484,11 @@ function getVerdict(quantity, feePercentage, sweetSpot) {
         return {
             emoji: '🟠',
             title: 'High fee zone',
-            message: `Sweet spot is ${sweetSpot} shares. Add ${sharesToSweetSpot} more shares to bring fees closer to efficient levels.`,
+            message: `Sweet spot is ${sweetSpot} shares — fees would drop below 1.6%.${intermediateHint}`,
             class: 'high',
             sweetSpot,
             sharesToSweetSpot,
+            intermediate,
             actionLabel: `Use sweet spot (${sweetSpot} shares)`
         };
     }
@@ -435,10 +496,11 @@ function getVerdict(quantity, feePercentage, sweetSpot) {
         return {
             emoji: '🟡',
             title: 'Near efficient range',
-            message: `Sweet spot is at ${sweetSpot} shares — add ${sharesToSweetSpot} more shares to target fees below 1.6%.`,
+            message: `Sweet spot is at ${sweetSpot} shares — add ${sharesToSweetSpot} more to target fees below 1.6%.${intermediateHint}`,
             class: 'moderate',
             sweetSpot,
             sharesToSweetSpot,
+            intermediate,
             actionLabel: `Use sweet spot (${sweetSpot} shares)`
         };
     }
@@ -449,6 +511,7 @@ function getVerdict(quantity, feePercentage, sweetSpot) {
         class: 'good',
         sweetSpot,
         sharesToSweetSpot,
+        intermediate,
         actionLabel: sharesToSweetSpot > 0 ? `Use sweet spot (${sweetSpot} shares)` : ''
     };
 }
@@ -558,6 +621,7 @@ export {
     getFeeStatus,
     isStampDutySignificant,
     getVerdict,
+    getIntermediateStep,
 
     // URL handling
     parseURLParams,

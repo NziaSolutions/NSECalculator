@@ -50,7 +50,12 @@ function animateNumber(element, endValue, duration = 600, prefix = '', suffix = 
         const easeOut = 1 - Math.pow(1 - progress, 3);
 
         const currentValue = startValue + (endValue - startValue) * easeOut;
-        element.textContent = prefix + currentValue.toFixed(2) + suffix;
+        // Format with thousands separators
+        const formatted = currentValue.toLocaleString('en-KE', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        element.textContent = prefix + formatted + suffix;
 
         if (progress < 1) {
             requestAnimationFrame(update);
@@ -357,15 +362,26 @@ function updateHeroProofCards(ticker) {
         // Update small trade card
         if (els.proofTickerSmall) els.proofTickerSmall.textContent = ticker;
         if (els.proofTradeSmall) els.proofTradeSmall.textContent = `Buy 1 share @ KES ${stock.price.toFixed(2)}`;
-        if (els.proofAmountSmall) els.proofAmountSmall.textContent = `KES ${smallBuy.totalAmount.toFixed(2)}`;
+        if (els.proofAmountSmall) {
+            const formatted = smallBuy.totalAmount.toLocaleString('en-KE', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            els.proofAmountSmall.textContent = `KES ${formatted}`;
+        }
         if (els.proofPercentSmall) els.proofPercentSmall.textContent = `${smallBuy.feePercentage.toFixed(2)}%`;
 
         // Update sweet spot card
         if (els.proofTickerSweet) els.proofTickerSweet.textContent = ticker;
         if (els.proofTradeSweet) els.proofTradeSweet.textContent = `Buy ${sweetSpot} shares @ KES ${stock.price.toFixed(2)}`;
         if (els.proofAmountSweet) els.proofAmountSweet.textContent = `${sweetBuy.feePercentage.toFixed(2)}%`;
-        if (els.proofSavedAmount) els.proofSavedAmount.textContent = `KES ${Math.abs(savings).toFixed(2)}`;
-
+        if (els.proofSavedAmount) {
+            const formatted = Math.abs(savings).toLocaleString('en-KE', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            els.proofSavedAmount.textContent = `KES ${formatted}`;
+        }
         // Left card: always warning (1 share is expensive — that's the point)
         // Right card: always green — it's the solution/sweet spot side
         if (els.proofCardSmall) {
@@ -666,8 +682,8 @@ function renderResults(result) {
     // Update hero with animation
     els.resultsLabel.textContent = result.amountLabel;
 
-    // Animate the main amount
-    animateNumber(els.resultsAmount, result.totalAmount, 800, 'KES ', '');
+    // Animate the main amount (KES label already in HTML)
+    animateNumber(els.resultsAmount, result.totalAmount, 800, '', '');
 
     // Update fee percentage and badge
     els.feePercentValue.textContent = result.feePercentage.toFixed(2);

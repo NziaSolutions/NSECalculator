@@ -2263,19 +2263,19 @@ body {
     }
 
     .breakdown-label {
-        font-size: 0.8125rem;
-        color: transparent;
+        font-size: 0;
         position: relative;
     }
 
     .breakdown-label::after {
         content: attr(data-short);
         color: var(--text);
+        font-size: 0.8125rem;
+        line-height: 1.2;
     }
 
     .breakdown-bar--statutory .breakdown-label::after {
-        content: "NSE + CMA + CDSC\A+ ICF";
-        white-space: pre-line;
+        content: "NSE + CMA + CDSC + ICF";
     }
 
     .broker-list {
